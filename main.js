@@ -460,35 +460,47 @@ async function main() {
     setStatus('Ready (stdlib init failed)', 'error');
   }
 
-  // 3. Init CodeMirror
-  try {
-    const { EditorView, basicSetup } = await import('https://esm.sh/@codemirror/basic-setup@0.20.0');
-    const { EditorState } = await import('https://esm.sh/@codemirror/state@6');
-    const { oneDark } = await import('https://esm.sh/@codemirror/theme-one-dark@6');
+  // 3. Init editor — CodeMirror on desktop, textarea on mobile
+  const isMobile = window.innerWidth <= 768;
 
-    // Desktop: fill container. Mobile: auto-height (page scrolls instead of editor)
-    const isMobile = window.innerWidth <= 768;
-    const editorHeight = EditorView.theme({
-      "&": isMobile ? {} : { height: "100%" },
-      ".cm-scroller": { overflow: isMobile ? "visible" : "auto" },
-      ".cm-content": { minHeight: isMobile ? "200px" : "auto" },
-    });
+  if (!isMobile) {
+    try {
+      const { EditorView, basicSetup } = await import('https://esm.sh/@codemirror/basic-setup@0.20.0');
+      const { EditorState } = await import('https://esm.sh/@codemirror/state@6');
+      const { oneDark } = await import('https://esm.sh/@codemirror/theme-one-dark@6');
+      const editorHeight = EditorView.theme({
+        "&": { height: "100%" },
+        ".cm-scroller": { overflow: "auto" },
+      });
+      editor = new EditorView({
+        state: EditorState.create({
+          doc: DEFAULT_SOURCE,
+          extensions: [basicSetup, oneDark, editorHeight],
+        }),
+        parent: editorEl,
+      });
+    } catch {
+      isMobile = true; // fallback to textarea
+    }
+  }
 
-    editor = new EditorView({
-      state: EditorState.create({
-        doc: DEFAULT_SOURCE,
-        extensions: [basicSetup, oneDark, editorHeight],
-      }),
-      parent: editorEl,
-    });
-  } catch {
+  if (isMobile || !editor) {
+    // Mobile or fallback: plain textarea (reliable on all devices)
     const ta = document.createElement('textarea');
-    ta.style.cssText = 'width:100%;height:100%;background:#1e1e2e;color:#cdd6f4;border:none;padding:0.5rem;font:inherit;resize:none;';
+    ta.className = 'mobile-editor';
     ta.value = DEFAULT_SOURCE;
+    ta.spellcheck = false;
+    ta.autocapitalize = 'off';
+    ta.autocomplete = 'off';
     editorEl.appendChild(ta);
     editor = {
-      state: { doc: { toString: () => ta.value, length: ta.value.length }, selection: { main: { head: ta.value.length } } },
-      dispatch: ({ changes }) => { ta.value = changes.insert; },
+      state: {
+        doc: { toString: () => ta.value, length: ta.value.length },
+        selection: { main: { head: ta.selectionStart || 0 } },
+      },
+      dispatch: ({ changes }) => {
+        if (changes.insert !== undefined) ta.value = changes.insert;
+      },
       focus: () => ta.focus(),
     };
   }

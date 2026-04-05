@@ -381,6 +381,22 @@ header h1 { font-size: 1.1rem; color: var(--blue); font-family: var(--font-sans)
 .cm-editor { position: absolute !important; inset: 0; }
 .cm-editor .cm-scroller { overflow: auto; }
 
+/* Mobile textarea editor */
+.mobile-editor {
+  width: 100%;
+  min-height: 300px;
+  background: var(--bg-base);
+  color: var(--text);
+  border: none;
+  padding: 0.6rem;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  line-height: 1.5;
+  resize: vertical;
+  outline: none;
+  tab-size: 2;
+}
+
 /* === Output === */
 .output-panel {
   width: 30%;
@@ -463,11 +479,9 @@ header h1 { font-size: 1.1rem; color: var(--blue); font-family: var(--font-sans)
   .toolbar-sep { display: none; }
   .sym-btn { padding: 0.1rem 0.25rem; font-size: 0.8rem; }
 
-  /* Editor on mobile: auto-height, no internal scroll — page scrolls instead */
+  /* Editor on mobile: uses textarea, not CodeMirror */
   .editor-wrapper { flex: none !important; }
-  #editor { height: auto !important; min-height: auto !important; position: static; }
-  .cm-editor { position: static !important; font-size: 0.75rem; }
-  .cm-editor .cm-scroller { overflow: visible !important; }
+  #editor { height: auto !important; min-height: auto !important; position: static !important; }
 
   /* Output: bottom strip */
   .output-panel {
