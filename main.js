@@ -152,6 +152,11 @@ function showPlayground() {
   playgroundEl.style.display = '';
   btnHome.style.display = '';
   btnFree.style.display = currentMode === 'tutorial' ? '' : 'none';
+
+  // Mobile: output collapsed by default
+  if (window.innerWidth <= 768) {
+    document.querySelector('.output-panel')?.classList.add('collapsed');
+  }
 }
 
 function enterFreeMode() {
@@ -193,6 +198,12 @@ async function enterTutorial(routeId) {
   // Load first incomplete level (or first level)
   const firstIncomplete = currentLevels.findIndex(l => !isLevelCompleted(routeId, l.id));
   loadLevel(firstIncomplete >= 0 ? firstIncomplete : 0);
+
+  // Mobile: collapse sidebar by default to save space
+  if (window.innerWidth <= 768) {
+    document.getElementById('sidebar').classList.add('collapsed');
+  }
+
   showPlayground();
 }
 
@@ -272,6 +283,9 @@ function handleCheck() {
 
   setOutput(formatCheckResult(result), isOk ? 'success' : 'error');
 
+  // Auto-expand output panel when there's a result
+  document.querySelector('.output-panel')?.classList.remove('collapsed');
+
   // Tutorial: mark level complete on success
   if (isOk && currentMode === 'tutorial' && currentRoute && currentLevelIdx >= 0) {
     const level = currentLevels[currentLevelIdx];
@@ -300,6 +314,7 @@ btnRun.addEventListener('click', () => {
   const result = run(source);
   const isOk = result.includes('"ok":true');
   setOutput(formatRunResult(result), isOk ? 'success' : 'error');
+  document.querySelector('.output-panel')?.classList.remove('collapsed');
 
   // Also mark tutorial complete on Run success
   if (isOk && currentMode === 'tutorial' && currentRoute && currentLevelIdx >= 0) {
