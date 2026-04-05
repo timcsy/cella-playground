@@ -342,7 +342,9 @@ header h1 {
 }
 
 .comparison-col:first-child { border-right: 1px solid #45475a; }
-.comparison-col .col-label { font-size: 0.7rem; color: #a6adc8; text-transform: uppercase; margin-bottom: 0.3rem; }
+.comparison-col .col-label { font-size: 0.7rem; color: #a6adc8; text-transform: uppercase; margin-bottom: 0.4rem; font-weight: bold; }
+.comparison-col .col-content { font-size: 0.8rem; line-height: 1.6; }
+.comparison-col .col-content code { background: #313244; padding: 0.1rem 0.3rem; border-radius: 2px; font-size: 0.75rem; color: #f5c2e7; }
 
 .comparison-diff {
   padding: 0.4rem 0.8rem;

@@ -228,16 +228,20 @@ function loadLevel(idx) {
   // Comparison box
   if (level.comparison) {
     tutorialComparison.style.display = '';
+    const renderCompCol = (text) => text
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/`([^`]+)`/g, '<code>$1</code>')
+      .replace(/\n/g, '<br>');
     tutorialComparison.innerHTML = `
       <div class="comparison-title">${level.comparison.title || '比較'}</div>
       <div class="comparison-body">
         <div class="comparison-col">
           <div class="col-label">Lean4 / Agda / Coq</div>
-          ${renderMarkdown(level.comparison.others)}
+          <div class="col-content">${renderCompCol(level.comparison.others)}</div>
         </div>
         <div class="comparison-col">
           <div class="col-label">Cella</div>
-          ${renderMarkdown(level.comparison.cella)}
+          <div class="col-content">${renderCompCol(level.comparison.cella)}</div>
         </div>
       </div>
       <div class="comparison-diff">→ ${level.comparison.diff}</div>
