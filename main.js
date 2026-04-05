@@ -461,7 +461,7 @@ async function main() {
   }
 
   // 3. Init editor — CodeMirror on desktop, textarea on mobile
-  const isMobile = window.innerWidth <= 768;
+  let isMobile = window.innerWidth <= 768;
 
   if (!isMobile) {
     try {
