@@ -376,8 +376,9 @@ header h1 { font-size: 1.1rem; color: var(--blue); font-family: var(--font-sans)
 }
 .editor-wrapper > .collapse-body { flex: 1; overflow: auto; }
 
-#editor { flex: 1; overflow: auto; }
-.cm-editor { height: 100%; }
+/* Editor: position trick to make CodeMirror fill container */
+#editor { flex: 1; position: relative; min-height: 200px; }
+.cm-editor { position: absolute !important; inset: 0; }
 .cm-editor .cm-scroller { overflow: auto; }
 
 /* === Output === */
@@ -462,11 +463,10 @@ header h1 { font-size: 1.1rem; color: var(--blue); font-family: var(--font-sans)
   .toolbar-sep { display: none; }
   .sym-btn { padding: 0.1rem 0.25rem; font-size: 0.8rem; }
 
-  /* Editor: explicit pixel height on mobile */
+  /* Editor on mobile: fixed container height, CodeMirror fills via position absolute */
   .editor-wrapper { flex: none !important; }
-  #editor { height: 300px !important; overflow: hidden; }
-  .cm-editor { height: 300px !important; max-height: 300px !important; font-size: 0.75rem; }
-  .cm-editor .cm-scroller { overflow: auto !important; }
+  #editor { height: 300px !important; min-height: 300px !important; position: relative; }
+  .cm-editor { font-size: 0.75rem; }
 
   /* Output: bottom strip */
   .output-panel {
