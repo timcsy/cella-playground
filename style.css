@@ -246,10 +246,12 @@ header h1 {
   background: #181825;
   border-bottom: 1px solid #313244;
   padding: 0.8rem 1rem;
-  max-height: 40vh;
+  max-height: 45vh;
+  min-height: 120px;
   overflow-y: auto;
   font-size: 0.85rem;
-  line-height: 1.6;
+  line-height: 1.7;
+  flex-shrink: 0;
 }
 
 .tutorial-header {
@@ -273,7 +275,28 @@ header h1 {
 .tutorial-description { color: #cdd6f4; }
 .tutorial-description h3 { color: #89b4fa; margin: 0.8rem 0 0.3rem; font-size: 0.95rem; }
 .tutorial-description strong { color: #f5c2e7; }
-.tutorial-description code { background: #313244; padding: 0.1rem 0.3rem; border-radius: 3px; font-size: 0.8rem; }
+.tutorial-description code { background: #313244; padding: 0.1rem 0.3rem; border-radius: 3px; font-size: 0.8rem; color: #f5c2e7; }
+
+.md-codeblock {
+  background: #11111b;
+  padding: 0.5rem 0.8rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  overflow-x: auto;
+  margin: 0.4rem 0;
+  border: 1px solid #313244;
+}
+
+.md-table {
+  border-collapse: collapse;
+  margin: 0.4rem 0;
+  font-size: 0.8rem;
+}
+.md-table td {
+  border: 1px solid #45475a;
+  padding: 0.3rem 0.6rem;
+}
+.md-table tr:first-child td { background: #313244; font-weight: bold; }
 
 .tutorial-comparison {
   margin-top: 0.8rem;
@@ -297,6 +320,9 @@ header h1 {
   flex: 1;
   padding: 0.5rem 0.8rem;
   font-size: 0.8rem;
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
+  min-width: 0;
 }
 
 .comparison-col:first-child { border-right: 1px solid #45475a; }

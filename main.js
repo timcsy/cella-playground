@@ -83,10 +83,16 @@ function setSource(text) {
 // --- Simple markdown renderer ---
 function renderMarkdown(md) {
   return md
+    .replace(/```([^`]*)```/gs, '<pre class="md-codeblock">$1</pre>')
     .replace(/^### (.+)$/gm, '<h3>$1</h3>')
     .replace(/^## (.+)$/gm, '<h3>$1</h3>')
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
     .replace(/`([^`]+)`/g, '<code>$1</code>')
+    .replace(/^\|(.+)\|$/gm, (match) => {
+      const cells = match.split('|').filter(c => c.trim()).map(c => `<td>${c.trim()}</td>`);
+      return `<tr>${cells.join('')}</tr>`;
+    })
+    .replace(/(<tr>.*<\/tr>\n?)+/gs, '<table class="md-table">$&</table>')
     .replace(/\n\n/g, '<br><br>')
     .replace(/\n- /g, '<br>• ');
 }
