@@ -462,11 +462,12 @@ header h1 { font-size: 1.1rem; color: var(--blue); font-family: var(--font-sans)
   .toolbar-sep { display: none; }
   .sym-btn { padding: 0.1rem 0.25rem; font-size: 0.8rem; }
 
-  /* Editor: give enough height to see code */
-  .editor-wrapper > .collapse-body { min-height: 250px; height: 40vh; }
-  #editor { min-height: 250px; height: 100%; }
-  .cm-editor { font-size: 0.75rem; height: 100%; }
-  .cm-editor .cm-scroller { max-height: 40vh; }
+  /* Editor: fixed height on mobile so code is visible */
+  .editor-wrapper { flex: none; }
+  .editor-wrapper > .collapse-body { height: 35vh; }
+  #editor { height: 100%; }
+  .cm-editor { height: 100% !important; font-size: 0.75rem; }
+  .cm-editor .cm-scroller { height: 100% !important; }
 
   /* Output: bottom strip */
   .output-panel {
