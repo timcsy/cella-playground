@@ -3,7 +3,7 @@
     "id": "c0",
     "title": "C0：5 分鐘語法速通",
     "concept": "Cella 語法接近 Lean4，但用 := 而非 where，用 match...with 而非 match...with",
-    "description": "快速語法對照：\n\n| Lean4 | Agda | Coq | Cella |\n|-------|------|-----|-------|\n| `def f : A → B := ...` | `f : A → B` | `Definition f : A → B := ...` | `def f : A -> B := ...` |\n| `inductive Nat` | `data Nat` | `Inductive Nat` | `data Nat = ...` |\n| `match x with \\| ...` | `... with ...` | `match x with ...` | `match x with \\| ...` |\n| `theorem` | 無（用 def） | `Theorem` / `Lemma` | `theorem` |\n| `by { tactic }` | 無 | `Proof. tactic. Qed.` | `by { tactic }` |\n\n符號：`==` 等於 `≡`，`->` 等於 `→`，`*` 等於 `×`。\n\n### 練習\n\n用 Cella 語法寫一個 Nat 的加法。",
+    "description": "**快速語法對照**\n\n**定義函數**\n- Lean4: `def f : A → B := ...`\n- Agda: `f : A → B`\n- Coq: `Definition f : A → B := ...`\n- **Cella**: `def f : A -> B := ...`\n\n**定義資料型別**\n- Lean4: `inductive Nat`\n- Agda: `data Nat`\n- Coq: `Inductive Nat`\n- **Cella**: `data Nat = zero | succ Nat`\n\n**Pattern matching**\n- Lean4: `match x with ...`\n- Coq: `match x with ... end.`\n- **Cella**: `match x with | zero => ... | succ k => ...`\n\n**Tactic 證明**\n- Lean4: `by { tactic }`\n- Coq: `Proof. tactic. Qed.`\n- **Cella**: `by { induction; exact refl }`\n\n**符號替代**：`==` 等於 `≡`，`->` 等於 `→`，`*` 等於 `×`\n\n### 練習\n\n用 Cella 語法寫一個 Nat 的加法。",
     "code": "-- Cella 語法快速上手\n-- Lean4 用戶注意：def 用 :=，不用 where\n-- Agda 用戶注意：data 在一行定義，用 | 分隔 constructor\n-- Coq 用戶注意：不需要 Proof/Qed，直接寫 term\n\ndata Nat = zero | succ Nat\n\ndef add (m : Nat) (n : Nat) : Nat := match m with\n  | zero => n\n  | succ k => succ (add k n)\n\n-- 隱式參數用 {}\ndef sym {A : Type} {a : A} {b : A} (p : a == b) : b == a :=\n  fun i => p (1 - i)\n",
     "hint": null,
     "comparison": {
