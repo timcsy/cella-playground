@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cella Playground</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Cella Playground</h1>
+    <span id="status" class="status">Loading...</span>
+  </header>
+
+  <div class="container">
+    <!-- Examples sidebar -->
+    <aside id="examples-panel" class="examples-panel">
+      <h2>Examples</h2>
+      <div id="examples-list"></div>
+    </aside>
+
+    <!-- Editor -->
+    <main class="editor-panel">
+      <div class="toolbar">
+        <button id="btn-check" disabled>Check</button>
+        <button id="btn-run" disabled>Run</button>
+        <button id="btn-inspect" disabled>Inspect Cache</button>
+        <span class="toolbar-sep"></span>
+        <span class="symbol-bar">
+          <button class="sym-btn" data-sym="≡" title="等式 (也可用 ==)">≡</button>
+          <button class="sym-btn" data-sym="→" title="箭頭 (也可用 ->)">→</button>
+          <button class="sym-btn" data-sym="×" title="乘積 (也可用 *)">×</button>
+          <button class="sym-btn" data-sym="λ" title="lambda (也可用 fun)">λ</button>
+          <button class="sym-btn" data-sym="∀" title="forall">∀</button>
+        </span>
+      </div>
+      <div id="editor"></div>
+    </main>
+
+    <!-- Output -->
+    <section class="output-panel">
+      <h2>Output</h2>
+      <pre id="output"></pre>
+    </section>
+  </div>
+
+  <script type="module" src="main.js"></script>
+</body>
+</html>
