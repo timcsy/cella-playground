@@ -463,10 +463,11 @@ header h1 { font-size: 1.1rem; color: var(--blue); font-family: var(--font-sans)
   .toolbar-sep { display: none; }
   .sym-btn { padding: 0.1rem 0.25rem; font-size: 0.8rem; }
 
-  /* Editor on mobile: fixed container height, CodeMirror fills via position absolute */
+  /* Editor on mobile: auto-height, no internal scroll — page scrolls instead */
   .editor-wrapper { flex: none !important; }
-  #editor { height: 300px !important; min-height: 300px !important; position: relative; }
-  .cm-editor { font-size: 0.75rem; }
+  #editor { height: auto !important; min-height: auto !important; position: static; }
+  .cm-editor { position: static !important; font-size: 0.75rem; }
+  .cm-editor .cm-scroller { overflow: visible !important; }
 
   /* Output: bottom strip */
   .output-panel {

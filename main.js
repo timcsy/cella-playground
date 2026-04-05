@@ -466,11 +466,12 @@ async function main() {
     const { EditorState } = await import('https://esm.sh/@codemirror/state@6');
     const { oneDark } = await import('https://esm.sh/@codemirror/theme-one-dark@6');
 
-    // Set editor height via CodeMirror's theme API (CSS alone doesn't work on mobile)
+    // Desktop: fill container. Mobile: auto-height (page scrolls instead of editor)
     const isMobile = window.innerWidth <= 768;
     const editorHeight = EditorView.theme({
-      "&": { height: isMobile ? "300px" : "100%" },
-      ".cm-scroller": { overflow: "auto" },
+      "&": isMobile ? {} : { height: "100%" },
+      ".cm-scroller": { overflow: isMobile ? "visible" : "auto" },
+      ".cm-content": { minHeight: isMobile ? "200px" : "auto" },
     });
 
     editor = new EditorView({
