@@ -385,9 +385,100 @@ header h1 {
 .level-item.completed .level-status { color: #a6e3a1; }
 .level-item .level-status { font-size: 0.7rem; width: 1.2rem; text-align: center; }
 
-/* Responsive */
-@media (max-width: 900px) {
-  .container { flex-direction: column; }
-  .examples-panel { width: 100%; max-height: 150px; border-right: none; border-bottom: 1px solid #313244; }
-  .output-panel { width: 100%; border-left: none; border-top: 1px solid #313244; }
+/* Responsive — tablet */
+@media (max-width: 1024px) {
+  .output-panel { width: 30%; }
+  .examples-panel { width: 180px; }
+  .toolbar { flex-wrap: wrap; }
+  .symbol-bar { margin-top: 0.3rem; }
+}
+
+/* Responsive — mobile */
+@media (max-width: 768px) {
+  body { height: auto; min-height: 100vh; }
+
+  /* Header */
+  header { flex-wrap: wrap; gap: 0.5rem; }
+  header h1 { font-size: 1rem; }
+  .header-btn { font-size: 0.7rem; padding: 0.2rem 0.5rem; }
+
+  /* Route selection */
+  .route-select { padding: 1rem; gap: 1rem; }
+  .route-select h2 { font-size: 1.3rem; }
+  .route-cards { flex-direction: column; align-items: center; gap: 0.8rem; }
+  .route-card { width: 100%; max-width: 300px; padding: 1rem; }
+  .route-card .icon { font-size: 2rem; }
+
+  /* Main container: stack vertically */
+  .container { flex-direction: column; height: auto; min-height: calc(100vh - 3rem); }
+
+  /* Sidebar: horizontal scrollable strip at top */
+  .examples-panel {
+    width: 100%;
+    max-height: none;
+    border-right: none;
+    border-bottom: 1px solid #313244;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 0.3rem;
+    padding: 0.4rem;
+    align-items: flex-start;
+  }
+  .examples-panel h2 { display: none; }
+  .examples-panel .example-group,
+  .examples-panel .level-item {
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .level-item { padding: 0.3rem 0.6rem; font-size: 0.75rem; }
+
+  /* Tutorial panel */
+  .tutorial-panel {
+    max-height: 35vh;
+    font-size: 0.8rem;
+    padding: 0.6rem 0.8rem;
+  }
+  .tutorial-concept { font-size: 0.9rem; }
+  .comparison-body { flex-direction: column; }
+  .comparison-col:first-child { border-right: none; border-bottom: 1px solid #45475a; }
+  .comparison-col { padding: 0.4rem 0.6rem; }
+
+  /* Toolbar */
+  .toolbar {
+    flex-wrap: wrap;
+    padding: 0.3rem;
+    gap: 0.3rem;
+  }
+  .toolbar button { padding: 0.25rem 0.6rem; font-size: 0.75rem; }
+  .toolbar-sep { display: none; }
+  .symbol-bar { gap: 0.15rem; }
+  .sym-btn { padding: 0.15rem 0.35rem; font-size: 0.85rem; }
+
+  /* Editor */
+  #editor { min-height: 200px; }
+  .cm-editor { font-size: 0.8rem; }
+
+  /* Output */
+  .output-panel {
+    width: 100%;
+    border-left: none;
+    border-top: 1px solid #313244;
+    min-height: 120px;
+    max-height: 30vh;
+  }
+
+  /* Tables */
+  .md-table { font-size: 0.7rem; }
+  .md-table th, .md-table td { padding: 0.3rem 0.4rem; }
+}
+
+/* Very small phones */
+@media (max-width: 400px) {
+  .route-card { padding: 0.8rem; }
+  .route-card .icon { font-size: 1.5rem; }
+  .route-card .name { font-size: 0.9rem; }
+  .tutorial-panel { max-height: 30vh; font-size: 0.75rem; }
+  #editor { min-height: 150px; }
 }
