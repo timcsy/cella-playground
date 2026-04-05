@@ -1,12 +1,17 @@
 // Cella Playground — main.js
-// Loads WASM module, wires editor and buttons.
+// Tutorial system + free mode
 
 import init, { check, run, init_stdlib, dump_celc } from './pkg/playground_wasm.js';
 
 // --- State ---
-let editor = null;       // CodeMirror EditorView
+let editor = null;
 let wasmReady = false;
 let stdlibLoaded = false;
+let currentMode = 'select'; // 'select' | 'tutorial' | 'free'
+let currentRoute = null;    // route object
+let currentLevels = [];     // levels array
+let currentLevelIdx = -1;
+let progress = loadProgress();
 
 // --- DOM refs ---
 const statusEl = document.getElementById('status');
@@ -14,8 +19,42 @@ const outputEl = document.getElementById('output');
 const btnCheck = document.getElementById('btn-check');
 const btnRun = document.getElementById('btn-run');
 const btnInspect = document.getElementById('btn-inspect');
+const btnHome = document.getElementById('btn-home');
+const btnFree = document.getElementById('btn-free');
 const editorEl = document.getElementById('editor');
-const examplesListEl = document.getElementById('examples-list');
+const routeSelectEl = document.getElementById('route-select');
+const playgroundEl = document.getElementById('playground');
+const sidebarTitle = document.getElementById('sidebar-title');
+const sidebarContent = document.getElementById('sidebar-content');
+const tutorialPanel = document.getElementById('tutorial-panel');
+const tutorialConcept = document.getElementById('tutorial-concept');
+const tutorialProgress = document.getElementById('tutorial-progress');
+const tutorialDescription = document.getElementById('tutorial-description');
+const tutorialComparison = document.getElementById('tutorial-comparison');
+const tutorialHint = document.getElementById('tutorial-hint');
+
+// --- Progress persistence ---
+function loadProgress() {
+  try {
+    return JSON.parse(localStorage.getItem('cella-tutorial-progress') || '{}');
+  } catch { return {}; }
+}
+
+function saveProgress() {
+  localStorage.setItem('cella-tutorial-progress', JSON.stringify(progress));
+}
+
+function isLevelCompleted(routeId, levelId) {
+  return (progress[routeId] || []).includes(levelId);
+}
+
+function markLevelCompleted(routeId, levelId) {
+  if (!progress[routeId]) progress[routeId] = [];
+  if (!progress[routeId].includes(levelId)) {
+    progress[routeId].push(levelId);
+    saveProgress();
+  }
+}
 
 // --- Output helpers ---
 function setOutput(text, cls = '') {
@@ -29,61 +68,209 @@ function setStatus(text, cls = '') {
 }
 
 function getSource() {
-  if (editor) return editor.state.doc.toString();
+  if (editor && editor.state) return editor.state.doc.toString();
   return '';
 }
 
 function setSource(text) {
-  if (editor) {
+  if (editor && editor.dispatch) {
     editor.dispatch({
       changes: { from: 0, to: editor.state.doc.length, insert: text }
     });
   }
 }
 
+// --- Simple markdown renderer ---
+function renderMarkdown(md) {
+  return md
+    .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+    .replace(/^## (.+)$/gm, '<h3>$1</h3>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    .replace(/\n\n/g, '<br><br>')
+    .replace(/\n- /g, '<br>• ');
+}
+
 // --- Format results ---
 function formatCheckResult(json) {
   try {
-    const result = JSON.parse(json);
-    if (result.ok) {
-      const defs = result.defs || [];
+    const r = JSON.parse(json);
+    if (r.ok) {
+      const defs = r.defs || [];
       return `✓ ${defs.length} definition${defs.length !== 1 ? 's' : ''} checked: ${defs.join(', ')}`;
     } else {
-      const errors = result.errors || [];
-      return errors.map(e => `✗ ${e.message}`).join('\n');
+      return (r.errors || []).map(e => `✗ ${e.message}`).join('\n');
     }
-  } catch (e) {
-    return json;
-  }
+  } catch { return json; }
 }
 
 function formatRunResult(json) {
   try {
-    const result = JSON.parse(json);
-    if (result.ok) {
-      const out = result.output || '';
-      const defs = result.defs || [];
+    const r = JSON.parse(json);
+    if (r.ok) {
+      const defs = r.defs || [];
       let text = `✓ ${defs.length} definition${defs.length !== 1 ? 's' : ''} checked\n`;
+      const out = r.output || '';
       if (out) text += `\n--- Output ---\n${out}`;
       else text += '\n(no output)';
       return text;
     } else {
-      const errors = result.errors || [];
-      return errors.map(e => `✗ ${e.message}`).join('\n');
+      return (r.errors || []).map(e => `✗ ${e.message}`).join('\n');
     }
-  } catch (e) {
-    return json;
-  }
+  } catch { return json; }
 }
 
-// --- Button handlers ---
-btnCheck.addEventListener('click', () => {
+// --- Mode switching ---
+function showRouteSelect() {
+  currentMode = 'select';
+  routeSelectEl.style.display = '';
+  playgroundEl.style.display = 'none';
+  btnHome.style.display = 'none';
+  btnFree.style.display = 'none';
+}
+
+function showPlayground() {
+  routeSelectEl.style.display = 'none';
+  playgroundEl.style.display = '';
+  btnHome.style.display = '';
+  btnFree.style.display = currentMode === 'tutorial' ? '' : 'none';
+}
+
+function enterFreeMode() {
+  currentMode = 'free';
+  currentRoute = null;
+  currentLevels = [];
+  currentLevelIdx = -1;
+  tutorialPanel.style.display = 'none';
+  sidebarTitle.textContent = 'Examples';
+  btnFree.style.display = 'none';
+  loadExamples();
+  setSource(DEFAULT_SOURCE);
+  setOutput('', '');
+  showPlayground();
+}
+
+async function enterTutorial(routeId) {
+  currentMode = 'tutorial';
+
+  // Load route data
+  try {
+    const resp = await fetch(`tutorials/route-${routeId}.json`);
+    if (!resp.ok) {
+      setOutput(`Cannot load route-${routeId}.json`, 'error');
+      return;
+    }
+    currentLevels = await resp.json();
+  } catch (e) {
+    setOutput(`Error loading tutorial: ${e.message}`, 'error');
+    return;
+  }
+
+  // Find route info
+  currentRoute = { id: routeId };
+  sidebarTitle.textContent = '章節';
+  renderLevelsSidebar();
+  tutorialPanel.style.display = '';
+
+  // Load first incomplete level (or first level)
+  const firstIncomplete = currentLevels.findIndex(l => !isLevelCompleted(routeId, l.id));
+  loadLevel(firstIncomplete >= 0 ? firstIncomplete : 0);
+  showPlayground();
+}
+
+// --- Tutorial rendering ---
+function renderLevelsSidebar() {
+  sidebarContent.innerHTML = '';
+  currentLevels.forEach((level, idx) => {
+    const btn = document.createElement('button');
+    btn.className = 'level-item' + (idx === currentLevelIdx ? ' active' : '') +
+      (isLevelCompleted(currentRoute.id, level.id) ? ' completed' : '');
+    const status = isLevelCompleted(currentRoute.id, level.id) ? '✅' : (idx === currentLevelIdx ? '📖' : '　');
+    btn.innerHTML = `<span class="level-status">${status}</span> ${level.title}`;
+    btn.addEventListener('click', () => loadLevel(idx));
+    sidebarContent.appendChild(btn);
+  });
+}
+
+function loadLevel(idx) {
+  if (idx < 0 || idx >= currentLevels.length) return;
+  currentLevelIdx = idx;
+  const level = currentLevels[idx];
+
+  // Update sidebar active state
+  renderLevelsSidebar();
+
+  // Concept
+  tutorialConcept.textContent = `💡 ${level.concept}`;
+  tutorialProgress.textContent = `${idx + 1} / ${currentLevels.length}`;
+
+  // Description
+  tutorialDescription.innerHTML = renderMarkdown(level.description);
+
+  // Comparison box
+  if (level.comparison) {
+    tutorialComparison.style.display = '';
+    tutorialComparison.innerHTML = `
+      <div class="comparison-title">${level.comparison.title || '比較'}</div>
+      <div class="comparison-body">
+        <div class="comparison-col">
+          <div class="col-label">Lean4 / Agda / Coq</div>
+          ${renderMarkdown(level.comparison.others)}
+        </div>
+        <div class="comparison-col">
+          <div class="col-label">Cella</div>
+          ${renderMarkdown(level.comparison.cella)}
+        </div>
+      </div>
+      <div class="comparison-diff">→ ${level.comparison.diff}</div>
+    `;
+  } else {
+    tutorialComparison.style.display = 'none';
+  }
+
+  // Hint
+  if (level.hint) {
+    tutorialHint.style.display = '';
+    tutorialHint.textContent = `💡 提示：${level.hint}`;
+  } else {
+    tutorialHint.style.display = 'none';
+  }
+
+  // Load code
+  setSource(level.code);
+  setOutput('', '');
+}
+
+// --- Check with tutorial awareness ---
+function handleCheck() {
   if (!wasmReady) return;
   const source = getSource();
   const result = check(source);
   const isOk = result.includes('"ok":true');
+
   setOutput(formatCheckResult(result), isOk ? 'success' : 'error');
-});
+
+  // Tutorial: mark level complete on success
+  if (isOk && currentMode === 'tutorial' && currentRoute && currentLevelIdx >= 0) {
+    const level = currentLevels[currentLevelIdx];
+    if (!isLevelCompleted(currentRoute.id, level.id)) {
+      markLevelCompleted(currentRoute.id, level.id);
+      renderLevelsSidebar();
+
+      // Congratulations
+      const completed = (progress[currentRoute.id] || []).length;
+      const total = currentLevels.length;
+      if (completed === total) {
+        setOutput(formatCheckResult(result) + '\n\n🎉 恭喜！你已完成這條路線的所有關卡！', 'success');
+      } else {
+        setOutput(formatCheckResult(result) + `\n\n✅ 過關！（${completed}/${total}）`, 'success');
+      }
+    }
+  }
+}
+
+// --- Button handlers ---
+btnCheck.addEventListener('click', handleCheck);
 
 btnRun.addEventListener('click', () => {
   if (!wasmReady) return;
@@ -91,22 +278,33 @@ btnRun.addEventListener('click', () => {
   const result = run(source);
   const isOk = result.includes('"ok":true');
   setOutput(formatRunResult(result), isOk ? 'success' : 'error');
+
+  // Also mark tutorial complete on Run success
+  if (isOk && currentMode === 'tutorial' && currentRoute && currentLevelIdx >= 0) {
+    const level = currentLevels[currentLevelIdx];
+    if (!isLevelCompleted(currentRoute.id, level.id)) {
+      markLevelCompleted(currentRoute.id, level.id);
+      renderLevelsSidebar();
+    }
+  }
 });
 
 btnInspect.addEventListener('click', async () => {
   try {
     const resp = await fetch('stdlib.celc');
     if (resp.ok) {
-      const buf = await resp.arrayBuffer();
-      const bytes = new Uint8Array(buf);
+      const bytes = new Uint8Array(await resp.arrayBuffer());
       setOutput(dump_celc(bytes), 'info');
     } else {
-      setOutput('No stdlib.celc available. Run stdlib-cache to generate it.', 'info');
+      setOutput('No stdlib.celc available.', 'info');
     }
   } catch (e) {
-    setOutput('Failed to load stdlib.celc: ' + e.message, 'error');
+    setOutput('Failed: ' + e.message, 'error');
   }
 });
+
+btnHome.addEventListener('click', showRouteSelect);
+btnFree.addEventListener('click', enterFreeMode);
 
 // --- Symbol buttons ---
 document.querySelectorAll('.sym-btn').forEach(btn => {
@@ -120,16 +318,14 @@ document.querySelectorAll('.sym-btn').forEach(btn => {
   });
 });
 
-// --- Examples ---
+// --- Free mode examples ---
 async function loadExamples() {
   try {
     const resp = await fetch('examples.json');
     if (!resp.ok) return;
     const examples = await resp.json();
     renderExamples(examples);
-  } catch (e) {
-    // examples.json not available yet — that's ok
-  }
+  } catch {}
 }
 
 function renderExamples(examples) {
@@ -138,7 +334,7 @@ function renderExamples(examples) {
     if (!levels[ex.level]) levels[ex.level] = [];
     levels[ex.level].push(ex);
   }
-  examplesListEl.innerHTML = '';
+  sidebarContent.innerHTML = '';
   for (const [level, items] of Object.entries(levels).sort()) {
     const group = document.createElement('div');
     group.className = 'example-group';
@@ -154,19 +350,43 @@ function renderExamples(examples) {
       });
       group.appendChild(btn);
     }
-    examplesListEl.appendChild(group);
+    sidebarContent.appendChild(group);
   }
 }
+
+// --- Route selection ---
+async function initRouteSelect() {
+  try {
+    const resp = await fetch('tutorials/routes.json');
+    if (!resp.ok) return;
+    const routes = await resp.json();
+    const container = document.getElementById('route-cards');
+    container.innerHTML = '';
+    for (const route of routes) {
+      const card = document.createElement('div');
+      card.className = 'route-card';
+      const completed = (progress[route.id] || []).length;
+      const progressText = completed > 0 ? `<div style="font-size:0.7rem;color:#a6adc8;margin-top:0.5rem">進度：${completed} 關完成</div>` : '';
+      card.innerHTML = `
+        <div class="icon">${route.icon}</div>
+        <div class="name">${route.name}</div>
+        <div class="subtitle">${route.subtitle}</div>
+        ${progressText}
+      `;
+      card.addEventListener('click', () => enterTutorial(route.id));
+      container.appendChild(card);
+    }
+  } catch {}
+}
+
+document.getElementById('btn-free-mode').addEventListener('click', enterFreeMode);
 
 // --- Init ---
 const DEFAULT_SOURCE = `-- Cella Playground
 -- 在這裡輸入程式碼，然後點 Check 或 Run。
 -- 符號提示：== 等於 ≡，-> 等於 →，* 等於 ×
--- 也可以用上方的符號按鈕插入特殊字元。
 
 def id (A : Type) (a : A) : A := a
-
--- 試試看：點 Check 驗證型別！
 `;
 
 async function main() {
@@ -177,39 +397,12 @@ async function main() {
     btnCheck.disabled = false;
     btnRun.disabled = false;
     btnInspect.disabled = false;
-    setStatus('Ready', 'loaded');
   } catch (e) {
     setStatus('WASM load failed: ' + e.message, 'error');
-    setOutput('Failed to load WASM module: ' + e.message, 'error');
     return;
   }
 
-  // 2. Init CodeMirror
-  try {
-    const { EditorView, basicSetup } = await import('https://esm.sh/@codemirror/basic-setup@0.20.0');
-    const { EditorState } = await import('https://esm.sh/@codemirror/state@6');
-    const { oneDark } = await import('https://esm.sh/@codemirror/theme-one-dark@6');
-
-    editor = new EditorView({
-      state: EditorState.create({
-        doc: DEFAULT_SOURCE,
-        extensions: [basicSetup, oneDark],
-      }),
-      parent: editorEl,
-    });
-  } catch (e) {
-    // Fallback: use a simple textarea
-    const ta = document.createElement('textarea');
-    ta.style.cssText = 'width:100%;height:100%;background:#1e1e2e;color:#cdd6f4;border:none;padding:0.5rem;font:inherit;resize:none;';
-    ta.value = DEFAULT_SOURCE;
-    editorEl.appendChild(ta);
-    editor = {
-      state: { doc: { toString: () => ta.value, length: ta.value.length } },
-      dispatch: ({ changes }) => { ta.value = changes.insert; }
-    };
-  }
-
-  // 3. Init stdlib (embedded in WASM module)
+  // 2. Init stdlib
   try {
     const defCount = init_stdlib();
     if (defCount > 0) {
@@ -222,8 +415,35 @@ async function main() {
     setStatus('Ready (stdlib init failed)', 'error');
   }
 
-  // 4. Load examples
-  await loadExamples();
+  // 3. Init CodeMirror
+  try {
+    const { EditorView, basicSetup } = await import('https://esm.sh/@codemirror/basic-setup@0.20.0');
+    const { EditorState } = await import('https://esm.sh/@codemirror/state@6');
+    const { oneDark } = await import('https://esm.sh/@codemirror/theme-one-dark@6');
+    editor = new EditorView({
+      state: EditorState.create({
+        doc: DEFAULT_SOURCE,
+        extensions: [basicSetup, oneDark],
+      }),
+      parent: editorEl,
+    });
+  } catch {
+    const ta = document.createElement('textarea');
+    ta.style.cssText = 'width:100%;height:100%;background:#1e1e2e;color:#cdd6f4;border:none;padding:0.5rem;font:inherit;resize:none;';
+    ta.value = DEFAULT_SOURCE;
+    editorEl.appendChild(ta);
+    editor = {
+      state: { doc: { toString: () => ta.value, length: ta.value.length }, selection: { main: { head: ta.value.length } } },
+      dispatch: ({ changes }) => { ta.value = changes.insert; },
+      focus: () => ta.focus(),
+    };
+  }
+
+  // 4. Init route selection
+  await initRouteSelect();
+
+  // 5. Show route select screen
+  showRouteSelect();
 }
 
 main();

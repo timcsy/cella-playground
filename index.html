@@ -10,16 +10,27 @@
   <header>
     <h1>Cella Playground</h1>
     <span id="status" class="status">Loading...</span>
+    <button id="btn-home" class="header-btn" style="display:none">← 選擇路線</button>
+    <button id="btn-free" class="header-btn" style="display:none">自由模式</button>
   </header>
 
-  <div class="container">
-    <!-- Examples sidebar -->
-    <aside id="examples-panel" class="examples-panel">
-      <h2>Examples</h2>
-      <div id="examples-list"></div>
+  <!-- Route selection screen -->
+  <div id="route-select" class="route-select">
+    <h2>選擇你的路線</h2>
+    <p class="route-tagline">一個概念，各式投影。三條路，同一個終點。</p>
+    <div id="route-cards" class="route-cards"></div>
+    <button id="btn-free-mode" class="free-mode-btn">或直接進入自由模式 →</button>
+  </div>
+
+  <!-- Main playground (hidden initially) -->
+  <div id="playground" class="container" style="display:none">
+    <!-- Sidebar: examples OR tutorial chapters -->
+    <aside id="sidebar" class="examples-panel">
+      <h2 id="sidebar-title">Examples</h2>
+      <div id="sidebar-content"></div>
     </aside>
 
-    <!-- Editor -->
+    <!-- Editor column (tutorial panel + editor) -->
     <main class="editor-panel">
       <div class="toolbar">
         <button id="btn-check" disabled>Check</button>
@@ -33,6 +44,16 @@
           <button class="sym-btn" data-sym="λ" title="lambda (也可用 fun)">λ</button>
           <button class="sym-btn" data-sym="∀" title="forall">∀</button>
         </span>
+      </div>
+      <!-- Tutorial description panel (hidden in free mode) -->
+      <div id="tutorial-panel" class="tutorial-panel" style="display:none">
+        <div class="tutorial-header">
+          <span id="tutorial-concept" class="tutorial-concept"></span>
+          <span id="tutorial-progress" class="tutorial-progress"></span>
+        </div>
+        <div id="tutorial-description" class="tutorial-description"></div>
+        <div id="tutorial-comparison" class="tutorial-comparison" style="display:none"></div>
+        <div id="tutorial-hint" class="tutorial-hint" style="display:none"></div>
       </div>
       <div id="editor"></div>
     </main>
