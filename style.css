@@ -425,7 +425,7 @@ header h1 { font-size: 1.1rem; color: var(--blue); font-family: var(--font-sans)
   .route-card { width: 100%; padding: 1rem; }
   .route-card .icon { font-size: 2rem; }
 
-  .container { flex-direction: column; height: auto; min-height: calc(100vh - 2.5rem); }
+  .container { flex-direction: column; height: auto; }
 
   /* Sidebar: vertical list, collapsed by default on mobile (via JS) */
   .examples-panel {
@@ -462,11 +462,11 @@ header h1 { font-size: 1.1rem; color: var(--blue); font-family: var(--font-sans)
   .toolbar-sep { display: none; }
   .sym-btn { padding: 0.1rem 0.25rem; font-size: 0.8rem; }
 
-  /* Editor */
-  .editor-wrapper > .collapse-body { min-height: 150px; }
-  #editor { min-height: 150px; }
-  .cm-editor { font-size: 0.75rem; }
-  .cm-editor .cm-content { padding: 0.3rem; }
+  /* Editor: give enough height to see code */
+  .editor-wrapper > .collapse-body { min-height: 250px; height: 40vh; }
+  #editor { min-height: 250px; height: 100%; }
+  .cm-editor { font-size: 0.75rem; height: 100%; }
+  .cm-editor .cm-scroller { max-height: 40vh; }
 
   /* Output: bottom strip */
   .output-panel {
