@@ -82,17 +82,29 @@ function setSource(text) {
 
 // --- Simple markdown renderer ---
 function renderMarkdown(md) {
-  return md
+  // First: extract and render tables
+  let result = md.replace(/(\|.+\|[\n])+/g, (block) => {
+    const rows = block.trim().split('\n').filter(r => r.includes('|'));
+    let html = '<table class="md-table">';
+    let isFirst = true;
+    for (const row of rows) {
+      const cells = row.split('|').slice(1, -1); // remove leading/trailing empty
+      // Skip separator rows (|---|---|)
+      if (cells.every(c => /^\s*[-:]+\s*$/.test(c))) continue;
+      const tag = isFirst ? 'th' : 'td';
+      html += '<tr>' + cells.map(c => `<${tag}>${c.trim()}</${tag}>`).join('') + '</tr>';
+      isFirst = false;
+    }
+    html += '</table>';
+    return html;
+  });
+
+  return result
     .replace(/```([^`]*)```/gs, '<pre class="md-codeblock">$1</pre>')
     .replace(/^### (.+)$/gm, '<h3>$1</h3>')
     .replace(/^## (.+)$/gm, '<h3>$1</h3>')
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
     .replace(/`([^`]+)`/g, '<code>$1</code>')
-    .replace(/^\|(.+)\|$/gm, (match) => {
-      const cells = match.split('|').filter(c => c.trim()).map(c => `<td>${c.trim()}</td>`);
-      return `<tr>${cells.join('')}</tr>`;
-    })
-    .replace(/(<tr>.*<\/tr>\n?)+/gs, '<table class="md-table">$&</table>')
     .replace(/\n\n/g, '<br><br>')
     .replace(/\n- /g, '<br>• ');
 }

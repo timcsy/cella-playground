@@ -289,14 +289,30 @@ header h1 {
 
 .md-table {
   border-collapse: collapse;
-  margin: 0.4rem 0;
+  margin: 0.6rem 0;
   font-size: 0.8rem;
-}
-.md-table td {
+  width: 100%;
   border: 1px solid #45475a;
-  padding: 0.3rem 0.6rem;
+  border-radius: 4px;
+  overflow: hidden;
 }
-.md-table tr:first-child td { background: #313244; font-weight: bold; }
+.md-table th, .md-table td {
+  border: 1px solid #45475a;
+  padding: 0.4rem 0.7rem;
+  text-align: left;
+  vertical-align: top;
+}
+.md-table th {
+  background: #313244;
+  color: #89b4fa;
+  font-weight: bold;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.md-table td { background: #1e1e2e; }
+.md-table tr:hover td { background: #181825; }
+.md-table code { background: #313244; padding: 0.1rem 0.2rem; border-radius: 2px; font-size: 0.75rem; }
 
 .tutorial-comparison {
   margin-top: 0.8rem;
