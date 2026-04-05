@@ -35,20 +35,6 @@
 
     <!-- Editor column -->
     <main class="editor-panel">
-      <div class="toolbar">
-        <button id="btn-check" disabled>Check</button>
-        <button id="btn-run" disabled>Run</button>
-        <button id="btn-inspect" disabled>Inspect Cache</button>
-        <span class="toolbar-sep"></span>
-        <span class="symbol-bar">
-          <button class="sym-btn" data-sym="≡" title="等式 (也可用 ==)">≡</button>
-          <button class="sym-btn" data-sym="→" title="箭頭 (也可用 ->)">→</button>
-          <button class="sym-btn" data-sym="×" title="乘積 (也可用 *)">×</button>
-          <button class="sym-btn" data-sym="λ" title="lambda (也可用 fun)">λ</button>
-          <button class="sym-btn" data-sym="∀" title="forall">∀</button>
-        </span>
-      </div>
-
       <!-- Tutorial panel: collapsible -->
       <div id="tutorial-panel" class="tutorial-panel collapsible" style="display:none">
         <div class="collapse-header" data-target="tutorial-body">
@@ -62,6 +48,21 @@
           <div id="tutorial-comparison" class="tutorial-comparison" style="display:none"></div>
           <div id="tutorial-hint" class="tutorial-hint" style="display:none"></div>
         </div>
+      </div>
+
+      <!-- Toolbar: between tutorial and editor -->
+      <div class="toolbar">
+        <button id="btn-check" disabled>Check</button>
+        <button id="btn-run" disabled>Run</button>
+        <button id="btn-inspect" disabled>Inspect Cache</button>
+        <span class="toolbar-sep"></span>
+        <span class="symbol-bar">
+          <button class="sym-btn" data-sym="≡" title="等式 (也可用 ==)">≡</button>
+          <button class="sym-btn" data-sym="→" title="箭頭 (也可用 ->)">→</button>
+          <button class="sym-btn" data-sym="×" title="乘積 (也可用 *)">×</button>
+          <button class="sym-btn" data-sym="λ" title="lambda (也可用 fun)">λ</button>
+          <button class="sym-btn" data-sym="∀" title="forall">∀</button>
+        </span>
       </div>
 
       <!-- Editor: collapsible -->
