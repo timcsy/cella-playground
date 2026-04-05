@@ -1,0 +1,65 @@
+[
+  {
+    "id": "a0",
+    "title": "A0：型別是規格",
+    "concept": "型別告訴你「期待什麼」，值是「實際拿到的」",
+    "description": "想像你在點外賣：\n\n- **「一份牛肉麵」** 就是型別——你的規格、你的期待\n- **廚師做出來的那碗麵** 就是值——實際拿到的東西\n- 如果你點了牛肉麵，結果來了一盤炒飯——**型別不 match！**\n\n在 Cella 裡：\n- `Nat` 是一個型別（自然數）\n- `zero` 是 `Nat` 型別的一個值\n- 如果你說 `def x : Nat := true`——型別不 match，Check 會報錯！\n\n### 練習\n\n點 Check 看看下面的程式碼。然後試著把 `zero` 改成 `true`，再 Check 看看錯誤訊息。",
+    "code": "-- 型別 = 規格，值 = 實際的東西\n\ndata Nat = zero | succ Nat\ndata Bool = true | false\n\n-- 這個 OK：zero 是 Nat\ndef myNumber : Nat := zero\n\n-- 這個 OK：true 是 Bool\ndef myBool : Bool := true\n\n-- 試試看：把下面的 zero 改成 true，Check 會怎樣？\ndef test : Nat := zero\n",
+    "hint": "改成 true 後會看到「type mismatch」——因為 true 是 Bool，不是 Nat",
+    "comparison": null
+  },
+  {
+    "id": "a1",
+    "title": "A1：函數是轉換",
+    "concept": "函數接收一個東西，產出另一個東西——保證每次都對",
+    "description": "把攝氏溫度轉成華氏溫度就是一個函數：給我一個攝氏數字，我還你一個華氏數字。\n\n在 Cella 裡，函數長這樣：\n```\ndef 函數名 (參數 : 型別) : 回傳型別 := 內容\n```\n\n`A -> B` 表示「接收一個 A，產出一個 B」。\n\n最簡單的函數：**恆等函數**——你給我什麼，我原封不動還你。\n\n### 練習\n\n完成 `double` 函數，讓它把一個數字加倍。",
+    "code": "data Nat = zero | succ Nat\n\ndef add (m : Nat) (n : Nat) : Nat := match m with\n  | zero => n\n  | succ k => succ (add k n)\n\n-- 恆等函數：你給我什麼，我還你什麼\ndef id (A : Type) (a : A) : A := a\n\n-- 練習：double 把一個數加倍\n-- 提示：add n n\ndef double (n : Nat) : Nat := add n n\n\ndef two : Nat := succ (succ zero)\ndef four : Nat := double two\n\ndef main : IO Unit := putNat four\n",
+    "hint": "double n = add n n",
+    "comparison": null
+  },
+  {
+    "id": "a2",
+    "title": "A2：資料是選擇",
+    "concept": "定義資料 = 列出所有可能。處理資料 = 每種可能都考慮到。",
+    "description": "紅綠燈有三種狀態：紅、黃、綠。\n\n在 Cella 裡，用 `data` 定義：\n```\ndata Light = red | yellow | green\n```\n\n處理紅綠燈時，用 `match` 把每種情況都列出來：\n```\nmatch light with\n  | red => ...\n  | yellow => ...\n  | green => ...\n```\n\n**重點**：你不能漏掉任何一種！如果你忘了處理 `yellow`，Cella 會報錯。這就是為什麼程式不會有「沒想到的情況」。\n\n### 練習\n\n完成 `canGo` 函數——綠燈可以走，其他不行。",
+    "code": "data Bool = true | false\n\ndata Light = red | yellow | green\n\n-- 能不能走？綠燈可以，其他不行\ndef canGo (l : Light) : Bool := match l with\n  | red => false\n  | yellow => false\n  | green => true\n\n-- 下一個燈是什麼？\ndef next (l : Light) : Light := match l with\n  | red => green\n  | yellow => red\n  | green => yellow\n",
+    "hint": "每種情況都要列出來！",
+    "comparison": null
+  },
+  {
+    "id": "a3",
+    "title": "A3：遞迴——函數呼叫自己",
+    "concept": "遞迴就是把大問題拆成小問題，直到不能再拆",
+    "description": "加法怎麼定義？\n\n- `0 + n = n`（加 0 等於自己）\n- `(k+1) + n = (k + n) + 1`（先算 k+n，再加 1）\n\n這就是**遞迴**——函數呼叫自己，但問題越來越小，最終到達 `zero` 停下來。\n\n階乘也是遞迴：\n- `0! = 1`\n- `(n+1)! = (n+1) × n!`\n\n### 練習\n\n點 **Run** 看看 3! 是多少。然後試著改成算 4!。",
+    "code": "data Nat = zero | succ Nat\n\ndef add (m : Nat) (n : Nat) : Nat := match m with\n  | zero => n\n  | succ k => succ (add k n)\n\ndef mul (m : Nat) (n : Nat) : Nat := match m with\n  | zero => zero\n  | succ k => add n (mul k n)\n\n-- 階乘：0! = 1, (n+1)! = (n+1) * n!\ndef factorial (n : Nat) : Nat := match n with\n  | zero => succ zero\n  | succ k => mul (succ k) (factorial k)\n\ndef three : Nat := succ (succ (succ zero))\n\n-- 3! = 6\ndef main : IO Unit := putNat (factorial three)\n",
+    "hint": "點 Run 看輸出！試著把 three 改成 succ three 算 4!",
+    "comparison": null
+  },
+  {
+    "id": "a4",
+    "title": "A4：等式是路徑",
+    "concept": "從 A 到 B 有很多條路，每條路都是一個「等式的證明」",
+    "description": "你從家走到學校，有很多條路可以走：\n- 走大馬路\n- 穿過公園\n- 繞學校後門\n\n每條路的起點都是「家」，終點都是「學校」，但**路線不同**。\n\n在 Cella 裡，`a == b` 就是「從 a 到 b 的路徑」。路徑用 `fun i => ...` 表達，`i` 從 0 走到 1：\n- `i = 0` 時在起點 `a`\n- `i = 1` 時在終點 `b`\n\n最簡單的路徑是 `refl`——原地踏步，`a == a`。聽起來無聊，但它是所有路的起點！\n\n### 練習\n\n看看下面的等式證明，然後自己寫一個。",
+    "code": "data Nat = zero | succ Nat\n\n-- refl = 原地踏步：a == a\ndef zero_is_zero : zero == zero := refl\n\n-- 也可以明確寫出路徑\n-- i 從 0 到 1，全程都是 zero\ndef zero_is_zero_v2 : zero == zero := fun i => zero\n\n-- 練習：證明 succ zero == succ zero\ndef one_is_one : succ zero == succ zero := refl\n",
+    "hint": "refl 就夠了！因為 succ zero 就是 succ zero",
+    "comparison": null
+  },
+  {
+    "id": "a5",
+    "title": "A5：程式 = 證明",
+    "concept": "寫出一個 A -> B 的函數 = 證明「如果 A 則 B」。不是比喻，是數學事實。",
+    "description": "到目前為止你做的每一件事，其實都是在**證明**：\n\n- 寫 `def id (A : Type) (a : A) : A := a`\n  → 你證明了「對任何型別 A，如果有一個 A，那就有一個 A」\n\n- 寫 `def addZeroRight ...`\n  → 你證明了「n + 0 = n」\n\n- 點 Check 通過\n  → Cella 驗證了你的證明是正確的\n\n**這不是比喻。** 這是 1930 年代 Curry 和 Howard 發現的數學對應：\n\n| 程式 | 數學 |\n|------|------|\n| 型別 | 命題 |\n| 函數 | 證明 |\n| A -> B | 如果 A 則 B |\n| Check 通過 | 證明正確 |\n\n### 練習\n\n你已經會證明定理了！下面的函數就是一個邏輯證明。",
+    "code": "-- 你寫的每個函數都是一個證明！\n\n-- 「如果有一個 A，那就有一個 A」\ndef identity (A : Type) (a : A) : A := a\n\n-- 「如果有 A 又有 B，那就有 A」\ndef first (A : Type) (B : Type) (a : A) (b : B) : A := a\n\n-- 「如果有 A -> B 又有 B -> C，那就有 A -> C」\n-- 這叫做「三段論」（syllogism）！\ndef compose (A : Type) (B : Type) (C : Type)\n  (f : A -> B) (g : B -> C) (a : A) : C := g (f a)\n\n-- Check 通過 = 你已經證明了三個邏輯定理\n",
+    "hint": null,
+    "comparison": null
+  },
+  {
+    "id": "a6",
+    "title": "A6：一個概念，各式投影",
+    "concept": "概念獨立於表達——「狗」和「dog」是同一個概念的不同投影",
+    "description": "最後一關，也是最重要的一關。\n\n「狗」和「dog」和「犬」——三個不同的符號，但指的是**同一個概念**。\n\n在程式世界裡也一樣：\n- 陣列和鏈結串列是同一個「序列」概念的不同投影\n- v1 API 和 v2 API 是同一個「能力」的不同投影\n- JSON 和 XML 是同一個「資料」的不同投影\n\nCella 能做到什麼？\n\n如果兩個結構是**等價的**（可以互相轉換且不丟失資訊），Cella 可以：\n1. **證明**它們是同一個概念\n2. **自動轉換**任何一邊的值到另一邊\n3. 不需要手動寫 adapter，不需要版本號\n\n**概念不變，表達自由切換。**\n\nCella 還在研究衡量概念之間「有多遠」的方法——不只能判斷「是不是同一個」，還能量化距離。（細節待發表）\n\n### 練習\n\n感受「函數保持路徑」——如果 a == b，那 f(a) == f(b)。概念的投影保持等式。",
+    "code": "-- 一個概念，各式投影\n-- 如果 a == b，那 f(a) == f(b)\n-- 「不同的表達，經過同樣的轉換，結果一樣」\n\ndef cong {A : Type} {B : Type} (f : A -> B) {a : A} {b : A}\n  (p : a == b) : f a == f b :=\n  fun i => f (p i)\n\n-- 恭喜你完成了初心者路線！\n-- 你學到了：\n-- 1. 型別是規格，值是實際的東西\n-- 2. 函數是轉換，保證每次都對\n-- 3. 資料是選擇，每種情況都要處理\n-- 4. 遞迴拆解大問題\n-- 5. 等式是路徑\n-- 6. 程式 = 證明\n-- 7. 概念獨立於表達\n",
+    "hint": null,
+    "comparison": null
+  }
+]
