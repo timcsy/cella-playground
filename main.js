@@ -328,6 +328,14 @@ btnInspect.addEventListener('click', async () => {
 btnHome.addEventListener('click', showRouteSelect);
 btnFree.addEventListener('click', enterFreeMode);
 
+// --- Collapsible sections ---
+document.querySelectorAll('.collapse-header').forEach(header => {
+  header.addEventListener('click', () => {
+    const parent = header.parentElement;
+    parent.classList.toggle('collapsed');
+  });
+});
+
 // --- Symbol buttons ---
 document.querySelectorAll('.sym-btn').forEach(btn => {
   btn.addEventListener('click', () => {

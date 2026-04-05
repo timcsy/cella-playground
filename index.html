@@ -24,13 +24,16 @@
 
   <!-- Main playground (hidden initially) -->
   <div id="playground" class="container" style="display:none">
-    <!-- Sidebar: examples OR tutorial chapters -->
-    <aside id="sidebar" class="examples-panel">
-      <h2 id="sidebar-title">Examples</h2>
-      <div id="sidebar-content"></div>
+    <!-- Sidebar: collapsible -->
+    <aside id="sidebar" class="examples-panel collapsible">
+      <div class="collapse-header" data-target="sidebar-content">
+        <span id="sidebar-title">Examples</span>
+        <span class="collapse-arrow">▼</span>
+      </div>
+      <div id="sidebar-content" class="collapse-body"></div>
     </aside>
 
-    <!-- Editor column (tutorial panel + editor) -->
+    <!-- Editor column -->
     <main class="editor-panel">
       <div class="toolbar">
         <button id="btn-check" disabled>Check</button>
@@ -45,23 +48,39 @@
           <button class="sym-btn" data-sym="∀" title="forall">∀</button>
         </span>
       </div>
-      <!-- Tutorial description panel (hidden in free mode) -->
-      <div id="tutorial-panel" class="tutorial-panel" style="display:none">
-        <div class="tutorial-header">
-          <span id="tutorial-concept" class="tutorial-concept"></span>
+
+      <!-- Tutorial panel: collapsible -->
+      <div id="tutorial-panel" class="tutorial-panel collapsible" style="display:none">
+        <div class="collapse-header" data-target="tutorial-body">
+          <span>📖 說明</span>
           <span id="tutorial-progress" class="tutorial-progress"></span>
+          <span class="collapse-arrow">▼</span>
         </div>
-        <div id="tutorial-description" class="tutorial-description"></div>
-        <div id="tutorial-comparison" class="tutorial-comparison" style="display:none"></div>
-        <div id="tutorial-hint" class="tutorial-hint" style="display:none"></div>
+        <div id="tutorial-body" class="collapse-body">
+          <div id="tutorial-concept" class="tutorial-concept"></div>
+          <div id="tutorial-description" class="tutorial-description"></div>
+          <div id="tutorial-comparison" class="tutorial-comparison" style="display:none"></div>
+          <div id="tutorial-hint" class="tutorial-hint" style="display:none"></div>
+        </div>
       </div>
-      <div id="editor"></div>
+
+      <!-- Editor: collapsible -->
+      <div class="editor-wrapper collapsible">
+        <div class="collapse-header" data-target="editor">
+          <span>✏️ 練習</span>
+          <span class="collapse-arrow">▼</span>
+        </div>
+        <div id="editor" class="collapse-body"></div>
+      </div>
     </main>
 
-    <!-- Output -->
-    <section class="output-panel">
-      <h2>Output</h2>
-      <pre id="output"></pre>
+    <!-- Output: collapsible -->
+    <section class="output-panel collapsible">
+      <div class="collapse-header" data-target="output">
+        <span>📤 Output</span>
+        <span class="collapse-arrow">▼</span>
+      </div>
+      <pre id="output" class="collapse-body"></pre>
     </section>
   </div>
 

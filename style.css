@@ -46,10 +46,8 @@ header h1 {
   padding: 0.5rem;
 }
 
-.examples-panel h2 {
+.examples-panel > .collapse-header {
   font-size: 0.9rem;
-  color: #89b4fa;
-  margin-bottom: 0.5rem;
 }
 
 .example-group { margin-bottom: 0.8rem; }
@@ -147,12 +145,7 @@ header h1 {
   flex-direction: column;
 }
 
-.output-panel h2 {
-  font-size: 0.9rem;
-  color: #89b4fa;
-  padding: 0.5rem;
-  border-bottom: 1px solid #313244;
-}
+/* output header handled by collapse-header */
 
 #output {
   flex: 1;
@@ -384,6 +377,48 @@ header h1 {
 .level-item.active { background: #313244; color: #89b4fa; }
 .level-item.completed .level-status { color: #a6e3a1; }
 .level-item .level-status { font-size: 0.7rem; width: 1.2rem; text-align: center; }
+
+/* Collapsible sections */
+.collapsible > .collapse-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.4rem 0.6rem;
+  cursor: pointer;
+  user-select: none;
+  font-size: 0.85rem;
+  color: #89b4fa;
+  font-weight: bold;
+  background: #181825;
+  border-bottom: 1px solid #313244;
+  gap: 0.5rem;
+}
+
+.collapsible > .collapse-header:hover { background: #1e1e2e; }
+
+.collapse-arrow {
+  font-size: 0.65rem;
+  transition: transform 0.2s;
+  color: #6c7086;
+}
+
+.collapsible.collapsed > .collapse-header .collapse-arrow {
+  transform: rotate(-90deg);
+}
+
+.collapsible.collapsed > .collapse-body {
+  display: none !important;
+}
+
+/* Editor wrapper */
+.editor-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.editor-wrapper > .collapse-body { flex: 1; }
 
 /* Responsive — tablet */
 @media (max-width: 1024px) {
