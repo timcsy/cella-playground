@@ -465,10 +465,17 @@ async function main() {
     const { EditorView, basicSetup } = await import('https://esm.sh/@codemirror/basic-setup@0.20.0');
     const { EditorState } = await import('https://esm.sh/@codemirror/state@6');
     const { oneDark } = await import('https://esm.sh/@codemirror/theme-one-dark@6');
+
+    // Set editor height via CodeMirror's theme API (CSS alone doesn't work)
+    const editorHeight = EditorView.theme({
+      "&": { height: "100%" },
+      ".cm-scroller": { overflow: "auto" },
+    });
+
     editor = new EditorView({
       state: EditorState.create({
         doc: DEFAULT_SOURCE,
-        extensions: [basicSetup, oneDark],
+        extensions: [basicSetup, oneDark, editorHeight],
       }),
       parent: editorEl,
     });
