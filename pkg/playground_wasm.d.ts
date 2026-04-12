@@ -18,6 +18,11 @@ export function dump_celc(cache_bytes: Uint8Array): string;
 export function init_stdlib(): number;
 
 /**
+ * Debug: try init_stdlib and return error message if failed.
+ */
+export function init_stdlib_debug(): string;
+
+/**
  * Type check + NbE eval + IO execute.
  * Uses NbE + io_runtime (not bytecode VM) — correct and fast.
  */
@@ -35,6 +40,7 @@ export interface InitOutput {
     readonly check: (a: number, b: number) => [number, number];
     readonly dump_celc: (a: number, b: number) => [number, number];
     readonly init_stdlib: () => number;
+    readonly init_stdlib_debug: () => [number, number];
     readonly run: (a: number, b: number) => [number, number];
     readonly start: () => void;
     readonly __wbindgen_externrefs: WebAssembly.Table;

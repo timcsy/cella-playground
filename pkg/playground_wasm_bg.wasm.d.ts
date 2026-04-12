@@ -4,6 +4,7 @@ export const memory: WebAssembly.Memory;
 export const check: (a: number, b: number) => [number, number];
 export const dump_celc: (a: number, b: number) => [number, number];
 export const init_stdlib: () => number;
+export const init_stdlib_debug: () => [number, number];
 export const run: (a: number, b: number) => [number, number];
 export const start: () => void;
 export const __wbindgen_externrefs: WebAssembly.Table;

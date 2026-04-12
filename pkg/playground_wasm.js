@@ -51,6 +51,23 @@ export function init_stdlib() {
 }
 
 /**
+ * Debug: try init_stdlib and return error message if failed.
+ * @returns {string}
+ */
+export function init_stdlib_debug() {
+    let deferred1_0;
+    let deferred1_1;
+    try {
+        const ret = wasm.init_stdlib_debug();
+        deferred1_0 = ret[0];
+        deferred1_1 = ret[1];
+        return getStringFromWasm0(ret[0], ret[1]);
+    } finally {
+        wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+    }
+}
+
+/**
  * Type check + NbE eval + IO execute.
  * Uses NbE + io_runtime (not bytecode VM) — correct and fast.
  * @param {string} source
