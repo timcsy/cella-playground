@@ -1,114 +1,114 @@
 [
   {
     "id": "c0",
-    "title": "C0：5 分鐘語法速通",
-    "concept": "Cella 語法接近 Lean4，但用 := 而非 where，用 match...with 而非 match...with",
-    "description": "**快速語法對照**\n\n**定義函數**\n- Lean4: `def f : A → B := ...`\n- Agda: `f : A → B`\n- Coq: `Definition f : A → B := ...`\n- **Cella**: `def f : A -> B := ...`\n\n**定義資料型別**\n- Lean4: `inductive Nat`\n- Agda: `data Nat`\n- Coq: `Inductive Nat`\n- **Cella**: `data Nat = zero | succ Nat`\n\n**Pattern matching**\n- Lean4: `match x with ...`\n- Coq: `match x with ... end.`\n- **Cella**: `match x with | zero => ... | succ k => ...`\n\n**Tactic 證明**\n- Lean4: `by { tactic }`\n- Coq: `Proof. tactic. Qed.`\n- **Cella**: `by { induction; exact refl }`\n\n**符號替代**：`==` 等於 `≡`，`->` 等於 `→`，`*` 等於 `×`\n\n### 練習\n\n用 Cella 語法寫一個 Nat 的加法。",
-    "code": "-- Cella 語法快速上手\n-- Lean4 用戶注意：def 用 :=，不用 where\n-- Agda 用戶注意：data 在一行定義，用 | 分隔 constructor\n-- Coq 用戶注意：不需要 Proof/Qed，直接寫 term\n\ndata Nat = zero | succ Nat\n\ndef add (m : Nat) (n : Nat) : Nat := match m with\n  | zero => n\n  | succ k => succ (add k n)\n\n-- 隱式參數用 {}\ndef sym {A : Type} {a : A} {b : A} (p : a == b) : b == a :=\n  fun i => p (1 - i)\n",
-    "hint": null,
+    "title": "C0：語法速覽",
+    "concept": "Cella 語法接近 Lean4，但有幾個關鍵差異：{} 隱式參數、match with |、fun i =>、≡ 路徑。",
+    "description": "**從 Lean4/Agda/Coq 遷移——關鍵語法差異**\n\n| 概念 | Lean4 | Agda | Coq | **Cella** |\n|------|-------|------|-----|-----------|\n| 定義 | `def f : T := ...` | `f : T; f = ...` | `Definition f : T := ...` | `def f : T := ...` |\n| 資料 | `inductive Nat` | `data Nat : Set` | `Inductive Nat.` | `data Nat = zero \\| succ Nat` |\n| 匹配 | `match x with` | `case x of` | `match x with ... end` | `match x with \\| c => ...` |\n| 隱式 | `{A : Type}` | `{A : Set}` | `{A : Type}` | `{A : Type}` |\n| 路徑 | `a = b`（歸納） | `a ≡ b`（歸納/cubical） | `a = b`（歸納） | `a ≡ b` 或 `a == b`（cubical 路徑） |\n| Tactic | `by tactic` | reflection | `Proof. ... Qed.` | `by { tactic; ... }` |\n| Lambda | `fun x => ...` | `λ x → ...` | `fun x => ...` | `fun x => ...` |\n\n**符號替代**：`==` = `≡`，`->` = `→`，`*` = `×`\n\n### Playground 環境\n\nStdlib 已預載（837 個定義），包含 `Nat`、`Bool`、`List`、`Maybe`、`Either`、`Equiv`、`isContr`、`isProp`、`isSet`、`ua`、`transport`、`hcomp`、`funExt`、`trans`、`sym`、`cong`、`J` 等。你可以直接使用它們。",
+    "code": "-- Cella 語法快速對照\n-- 來自 Lean4 的人注意：data 一行定義，| 分隔 constructor\n-- 來自 Agda 的人注意：隱式參數用 {}，不用 forall {A : Set}\n-- 來自 Coq 的人注意：不需要 Proof/Qed，直接寫 term 或 by { }\n\n-- 定義函數（隱式參數用 {}）\ndef id {A : Type} (x : A) : A := x\n\n-- Pattern matching（Lean4 用戶：注意 match x with | pattern => body 語法）\ndef pred (n : Nat) : Nat := match n with\n  | zero => zero\n  | succ k => k\n\n-- 路徑 = I -> A 的函數（非歸納定義的等式！）\n-- ≡ 是 cubical path type，fun i => ... 直接構造路徑\ndef myRefl {A : Type} {a : A} : a ≡ a := fun i => a\n\ndef mySym {A : Type} {a b : A} (p : a ≡ b) : b ≡ a :=\n  fun i => p (1 - i)\n\n-- Tactic 證明\ntheorem addZeroL_tac (n : Nat) : add zero n ≡ n := by { simp }\n",
+    "hint": "playground 已預載 stdlib——你不需要重新定義 Nat、Bool、add 等基本型別和函數。",
     "comparison": {
       "title": "語法對照",
-      "others": "Lean4: `def add : Nat → Nat → Nat | 0, n => n | n+1, m => (add n m) + 1`\nAgda: `add : Nat → Nat → Nat; add zero n = n; add (suc k) n = suc (add k n)`\nCoq: `Fixpoint add (m n : nat) := match m with | O => n | S k => S (add k n) end.`",
-      "cella": "`def add (m : Nat) (n : Nat) : Nat := match m with | zero => n | succ k => succ (add k n)`",
-      "diff": "語法差異不大。核心差異從 C1 開始——Cubical interval。"
+      "others": "Lean4: `def f (n : Nat) : Nat := match n with | 0 => 0 | n+1 => n`\nAgda: `f : ℕ → ℕ; f zero = zero; f (suc k) = k`\nCoq: `Definition f (n : nat) := match n with | O => O | S k => k end.`",
+      "cella": "`def f (n : Nat) : Nat := match n with | zero => zero | succ k => k`\n路徑用 `fun i => ...` 直接構造。",
+      "diff": "語法差異不大。核心差異在路徑型別：Lean4/Coq 的 `=` 是歸納型別，Cella 的 `≡` 是 I → A。"
     }
   },
   {
     "id": "c1",
-    "title": "C1：Cubical Interval",
-    "concept": "路徑是 I → A 的函數。Lean4/Coq 沒有 interval type。",
-    "description": "在 Cella 中，等式 `a == b` 的證明是一個函數 `fun i => ...`，其中 `i` 是 **interval variable**（0 到 1）：\n- `i = 0` 時值為 `a`\n- `i = 1` 時值為 `b`\n\n這不是公理——這是**定義**。路徑就是 `I → A` 的函數。\n\nInterval 上的運算：\n- `1 - i`：翻轉（sym 用這個）\n- `i ∧ j`（meet）：min\n- `i ∨ j`（join）：max\n\n### 練習\n\n用 interval 寫 sym 和 cong。",
-    "code": "data Nat = zero | succ Nat\n\n-- sym：翻轉路徑方向\n-- i = 0 時要回傳 b，i = 1 時要回傳 a\n-- 所以用 1 - i 翻轉\ndef sym {A : Type} {a : A} {b : A} (p : a == b) : b == a :=\n  fun i => p (1 - i)\n\n-- cong：函數保持路徑\n-- p(i) 從 a 走到 b，f(p(i)) 從 f(a) 走到 f(b)\ndef cong {A : Type} {B : Type} (f : A -> B) {a : A} {b : A}\n  (p : a == b) : f a == f b :=\n  fun i => f (p i)\n\n-- Lean4/Coq 沒有 fun i => ... 的路徑\n-- 它們的 eq 是歸納定義的，只有 refl constructor\n",
-    "hint": null,
+    "title": "C1：Implicit 與 Type Class",
+    "concept": "{A : Type} 隱式參數、class/instance/extends 語法——Lean4 風格的 type class 系統。",
+    "description": "**隱式參數**\n\n`{A : Type}` 表示 A 由 unification 推導，不需要手動傳入。跟 Lean4 相同語法。\n\n**Type Class 系統**\n\nCella 的 type class 語法接近 Lean4：\n\n```\nclass ClassName (params) where {\n  method1 : Type1\n  method2 : Type2 := default_body\n}\n```\n\n**Instance** 宣告：\n```\ninstance instName : ClassName ConcreteType where {\n  method1 := implementation1\n  method2 := implementation2\n}\n```\n\n**繼承** 用 `extends`：\n```\nclass Ord (A : Type) extends Eq where {\n  compare : A -> A -> Ordering\n}\n```\n\n### 跟 Lean4 的差異\n- Lean4: `instance : Foo Nat where ...`（可匿名）→ Cella: `instance name : Foo Nat where { ... }`（必須命名）\n- Lean4: field 用換行分隔 → Cella: field 用 `;` 分隔\n- 都支援 `extends` 繼承",
+    "code": "-- Type Class 定義\nclass Eq (A : Type) where {\n  eq : A -> A -> Bool\n}\n\n-- Instance（where 語法）\ninstance eqBool : Eq Bool where {\n  eq := fun a => fun b => match a with\n    | true => b\n    | false => not b\n}\n\n-- 繼承：Ord extends Eq\nclass Ord (A : Type) extends Eq where {\n  compare : A -> A -> Bool\n}\n\n-- 帶繼承的 instance：必須同時提供 Eq 的 method\ninstance ordBool : Ord Bool where {\n  eq := fun a => fun b => match a with\n    | true => b\n    | false => not b;\n  compare := fun a => fun b => match a with\n    | true => (match b with | true => false | false => false)\n    | false => (match b with | true => true | false => false)\n}\n\n-- 隱式參數與 type class 配合\ndef isEq {A : Type} (inst : Eq A) (x : A) (y : A) : Bool :=\n  Eq.eq {A} inst x y\n",
+    "hint": "注意：class 的 method 預設是 field projection（如 Eq.eq），不是 Lean4 的 dot notation。",
     "comparison": {
-      "title": "Interval — Cubical 獨有",
-      "others": "Lean4: `eq` 是 inductive type，只有 `Eq.refl`\nCoq: `eq` 同上，只有 `eq_refl`\nAgda (cubical): 有 `i : I`，跟 Cella 相同",
-      "cella": "`fun i => ...` 直接構造路徑。`1 - i` 翻轉。interval 是 first-class。",
-      "diff": "Lean4/Coq 的等式是歸納定義的 token。Cella/Agda 的等式是有結構的路徑函數。"
+      "title": "Type Class 系統",
+      "others": "Lean4: `class Eq (α : Type) where eq : α → α → Bool`（成熟，自動 instance search）\nAgda: 用 record + instance arguments 模擬\nCoq: Canonical Structures 或 `Class`/`Instance` 語法",
+      "cella": "`class Eq (A : Type) where { eq : A -> A -> Bool }` + `instance eqBool : Eq Bool where { eq := ... }`",
+      "diff": "語法接近 Lean4。目前 instance 需要命名且明確傳入。未來會加入自動 instance search。"
     }
   },
   {
     "id": "c2",
-    "title": "C2：Transport Computes",
-    "concept": "Cella 的 transport 實際歸約。Lean4/Coq 的 subst 是 opaque。",
-    "description": "Lean4:\n```\nsubst h x  -- stuck, 不歸約\n```\n\nCella:\n```\ntransport (fun i => P (h i)) x  -- 歸約！\n```\n\n為什麼？因為 Cella 的 transport 基於 Kan operations（CCHM §4），有明確的計算規則：\n- `transport refl x = x`（沿恆等路徑不動）\n- `transport` 在 Pi/Sigma/PathP/Ind 上都有結構化歸約\n\n### 練習\n\n用 transport 做 subst——感受它的計算性。",
-    "code": "data Nat = zero | succ Nat\n\ndef add (m : Nat) (n : Nat) : Nat := match m with\n  | zero => n\n  | succ k => succ (add k n)\n\n-- subst 就是 transport 的特例\ndef subst {A : Type} (P : A -> Type) {a : A} {b : A}\n  (p : a == b) (pa : P a) : P b :=\n  transport (fun i => P (p i)) pa\n\n-- transport refl x = x（可計算！）\n-- 在 Lean4 中這需要 @[simp] 或 rfl 特殊處理\ndef transport_refl {A : Type} (x : A) : x == x := refl\n",
-    "hint": null,
+    "title": "C2：Tactic 系統",
+    "concept": "28+ 個 tactic：exact、intro、apply、rewrite、simp、ring、omega、induction、cases、injection、discriminate 等。",
+    "description": "**Tactic 語法**\n```\ntheorem name (params) : goal := by {\n  tactic1;\n  tactic2;\n  tactic3\n}\n```\n\n**完整 tactic 列表**（28+）：\n\n| 類別 | Tactic |\n|------|--------|\n| 基礎 | `exact`, `intro`, `apply`, `assumption` |\n| 等式 | `rfl`, `rewrite`, `rewrite_at`, `sym`, `trans`, `cong` |\n| 簡化 | `simp`, `simp_only`, `simp_extra`, `dsimp`, `ring`, `omega`, `norm_num` |\n| 分析 | `induction`, `cases`, `injection`, `discriminate` |\n| 邏輯 | `constructor`, `left`, `right`, `exfalso`, `contradiction`, `ext` |\n| 控制 | `try`, `repeat`, `all`, `auto`, `decide` |\n| 進階 | `have`, `suffices`, `change`, `unfold`, `revert`, `generalize`, `specialize`, `conv` |\n\n**跟 Lean4/Coq 的差異**：\n- `simp` 基於定義展開，不是 Lean4 的 simp lemma database\n- `ring` 對 Nat 算術有效\n- `omega` 處理自然數線性算術\n- `induction` 自動生成 `ih`（歸納假設）和 `x0`（遞迴參數）\n- tactic 用 `;` 分隔，最後一個不需要 `;`",
+    "code": "-- rfl: goal 是 a ≡ a 時直接結束\ntheorem rfl_demo : add zero (succ zero) ≡ succ zero := by { rfl }\n\n-- simp: 定義展開 + 化簡\ntheorem simp_demo (n : Nat) : add zero n ≡ n := by { simp }\n\n-- rewrite: 用等式改寫 goal\n-- addComm 已在 stdlib 中：addComm (m n : Nat) : add m n ≡ add n m\ndef n2 : Nat := succ (succ zero)\ndef n3 : Nat := succ (succ (succ zero))\ntheorem rw_demo : add n2 n3 ≡ add n3 n2 := by {\n  rewrite (addComm n2 n3);\n  exact refl\n}\n\n-- cases: 對值做分情況討論\ntheorem cases_demo (b : Bool) : not (not b) ≡ b := by {\n  cases b;\n  exact refl;\n  exact refl\n}\n\n-- ring: Nat 算術自動化\ntheorem ring_demo : add zero zero ≡ zero := by { ring }\n\n-- omega: 自然數線性算術\ntheorem omega_demo : add (succ zero) (succ zero) ≡ succ (succ zero) := by { omega }\n\n-- 組合 tactic\ntheorem combo_demo (a : Bool) : or a false ≡ a := by {\n  cases a;\n  exact refl;\n  exact refl\n}\n",
+    "hint": "simp 基於定義展開。如果 goal 已經是 definitional equality，用 rfl 更簡潔。",
     "comparison": {
-      "title": "Transport 計算性",
-      "others": "Lean4: `Eq.subst h x` 不歸約（需要 simp/rfl）\nCoq: `eq_rect` 不歸約（需要 simpl + match）\nAgda (cubical): `transport` 歸約 ✓",
-      "cella": "`transport (fun i => P (p i)) x` 直接歸約",
-      "diff": "Lean4/Coq 需要 tactic 才能「計算」subst 的結果。Cella 的 evaluator 直接算。"
+      "title": "Tactic 系統比較",
+      "others": "Lean4: `by simp [lemma1, lemma2]`（simp lemma database 強大）、`omega`（整數）、`ring`（環）\nCoq: `induction n; simpl; auto.`（Ltac 成熟，SSReflect 進階）\nAgda: 無 tactic（reflection-based automation）",
+      "cella": "`by { induction m; exact refl; rewrite ih; exact refl }`\n28+ tactic，涵蓋基礎到進階。tactic 產出完整 proof term。",
+      "diff": "Lean4 的 simp 有 lemma database，自動化更強。Cella 的 simp 基於定義展開，但 tactic 覆蓋面廣（28+）。"
     }
   },
   {
     "id": "c3",
-    "title": "C3：ua Computes",
-    "concept": "transport (ua e) x = e.forward x。Lean4/Coq 做不到這一步。",
-    "description": "**這是 Cella（和 Cubical Agda）跟 Lean4/Coq 最大的差異。**\n\nLean4:\n```\ntransport (ua e) x\n-- stuck. ua 是 axiom，沒有計算規則。\n```\n\nCoq (HoTT library):\n```\ntransport (ua e) x\n-- stuck. ua 是 axiom。\n```\n\nCella:\n```\ntransport (ua e) x\n-- = e.forward x\n-- 實際歸約！\n```\n\n為什麼？因為 Cella 的 `ua` 基於 Glue types（CCHM §6），不是公理。Glue types 有完整的 transport 計算規則，所以 `transport (ua e) x` 歸約為 `e.forward x`。\n\n**實際意義**：等價不只是「理論上可互轉」，而是「evaluator 真的會幫你轉」。\n\n### 練習\n\n驗證 not 是 Bool 的等價。",
-    "code": "data Bool = true | false\n\ndef not (b : Bool) : Bool := match b with\n  | true => false\n  | false => true\n\ndef notNot (b : Bool) : not (not b) == b := match b with\n  | true => refl\n  | false => refl\n\n-- 想像 ua(notEquiv) 給你 Bool == Bool 的路徑\n-- transport (ua notEquiv) true\n-- = notEquiv.forward true\n-- = not true\n-- = false\n--\n-- 這整個計算在 Lean4/Coq 中不會發生！\n-- 它們的 ua 是 axiom，transport 會 stuck。\n",
-    "hint": null,
+    "title": "C3：Cubical Interval",
+    "concept": "I type、fun i => ... 路徑 lambda、1-i（sym）、min/max（composition）。這是跟 Book HoTT 的核心差異。",
+    "description": "**路徑不是歸納型別——路徑是函數**\n\nLean4/Coq 的 `=` 是歸納定義的，只有 `refl` 一個 constructor。你只能做 pattern match on `refl`。\n\nCella 的 `≡` 是 `I → A` 的函數型別：\n- `p : a ≡ b` 意味著 `p : I → A`，其中 `p 0 = a`，`p 1 = b`\n- `fun i => ...` 直接構造路徑\n- `p i` 直接應用路徑\n\n**Interval 上的運算**（這是 CCHM 的基礎）：\n- `1 - i`：翻轉（sym 用這個）\n- `min i j`（meet）：i ∧ j\n- `max i j`（join）：i ∨ j\n\n**為什麼這很重要？**\n\n在 Lean4 中，`sym` 需要 `match h with | rfl => rfl`——一個 elimination。\n在 Cella 中，`sym p = fun i => p (1 - i)`——一個 **構造**。\n\n這意味著 sym 的計算行為是**透明的**——evaluator 知道 sym 只是翻轉方向。不需要 case split。\n\n### 關鍵後果\n- `funExt` 不是公理，是 `fun i => fun x => h x i`\n- `sym (sym p) = p` 是 definitional（因為 `1 - (1 - i) = i`）\n- `cong f p = fun i => f (p i)` 是直接構造",
+    "code": "-- 路徑 = I → A 的函數\n-- stdlib 已有 sym、cong、trans，這裡展示原理\n\n-- sym：翻轉 interval\ndef mySym2 {A : Type} {a b : A} (p : a ≡ b) : b ≡ a :=\n  fun i => p (1 - i)\n\n-- cong：函數作用在路徑上\ndef myCong {A B : Type} {a b : A} (f : A -> B) (p : a ≡ b) : f a ≡ f b :=\n  fun i => f (p i)\n\n-- funExt 不是公理！是直接構造\ndef myFunExt {A B : Type} {f g : A -> B}\n  (h : (x : A) -> f x ≡ g x) : f ≡ g :=\n  fun i => fun (x : A) => h x i\n\n-- symInv：sym 是 involution，definitional！\n-- sym(sym p) i = p(1-(1-i)) = p(i)\n-- 所以 fun j => p 就是證明\ndef mySymInv {A : Type} {a b : A} (p : a ≡ b) : sym (sym p) ≡ p :=\n  fun j => p\n\n-- trans：用 hcomp 合成路徑\n-- hcomp A [i=0 => a | i=1 => q] (p i)\ndef myTrans {A : Type} {a b c : A} (p : a ≡ b) (q : b ≡ c) : a ≡ c :=\n  fun i => hcomp A [i = 0 => a | i = 1 => q] (p i)\n\n-- J（path induction）可以從 transport 導出\ndef myJ {A : Type} {a : A} (P : (x : A) -> a ≡ x -> Type)\n  (d : P a (fun i => a)) {b : A} (p : a ≡ b) : P b p :=\n  transport (fun i => P (p i) (fun j => p (min i j))) d\n",
+    "hint": "Lean4/Coq 用戶注意：你不需要 J 來證 sym、cong、funExt——直接用 interval 操作構造。J 仍然可用（transport 導出），但 cubical 風格更直接。",
     "comparison": {
-      "title": "ua 計算性——Cubical 的殺手功能",
-      "others": "Lean4: `transport (ua e) x` = **stuck**\nCoq: `transport (ua e) x` = **stuck**\nAgda (cubical): `transport (ua e) x` = `e .fst x` ✓",
-      "cella": "`transport (ua e) x` = `e.forward x` ✓\n基於 Glue types，完整計算規則",
-      "diff": "Lean4/Coq 的 ua 是「聲明」。Cella/Agda 的 ua 是「程式碼」。差別在於你能不能**用**它。"
+      "title": "Interval — Cubical 獨有",
+      "others": "Lean4: `eq` 是 inductive，只有 `Eq.refl`。sym/cong 靠 match refl。\nCoq: `eq` 同上，靠 `eq_rect`。\nAgda (cubical): 有 `i : I`，跟 Cella 相同。\nAgda (--without-K): 無 interval，靠 J。",
+      "cella": "`fun i => p (1 - i)` 直接構造 sym。interval 是 first-class。",
+      "diff": "Lean4/Coq 的等式是 token（只有 refl）。Cella 的等式是有結構的路徑函數。這讓 sym/cong/funExt 成為構造而非 elimination。"
     }
   },
   {
     "id": "c4",
-    "title": "C4：HComp 與 Glue",
-    "concept": "Kan operations 讓高維路徑有計算內容",
-    "description": "Cubical Type Theory 的核心 Kan operations：\n\n- **transp**（transport）：沿型別路徑搬運值\n- **hcomp**（homogeneous composition）：在型別固定時合成多條路徑\n- **Glue types**：ua 的計算基礎——在邊界已知時「黏合」等價\n\nCella 完整實作 CCHM §2-§8：\n- Pi/Sigma structural transport\n- PathP (dependent paths)\n- Glue hcomp（ua 的計算規則）\n- 任意 n-cell HITs（higher inductive types）\n- Coinductive types\n\n### 練習\n\ntransport 在 Sigma type 上的結構化歸約。",
-    "code": "data Nat = zero | succ Nat\n\ndef add (m : Nat) (n : Nat) : Nat := match m with\n  | zero => n\n  | succ k => succ (add k n)\n\n-- dependent path: PathP (fun i => A i) a b\n-- 路徑的型別可以隨 i 變化\n\n-- transport 在不同型別上有不同的歸約規則：\n-- Pi: transport (fun i => A(i) -> B(i)) f = fun a => transport B (f (transport A^-1 a))\n-- Sigma: transport (fun i => (a : A(i)) * B(i)(a)) (x, y) = (transport A x, transport B' y)\n-- PathP: 也有結構化歸約\n\ndef addZeroRight (n : Nat) : add n zero == n := match n with\n  | zero => refl\n  | succ k => fun i => succ (addZeroRight k i)\n",
-    "hint": null,
+    "title": "C4：Transport 能算",
+    "concept": "transport (ua e) x ≡ fst e x 是 REFL。這是 Cella 的殺手功能。Lean4 的 ua 是 axiom，transport 不歸約。",
+    "description": "**這是從 Lean4/Coq 遷移到 Cella 最重要的理由。**\n\nLean4：\n```\n-- ua 是 axiom，沒有計算規則\ntransport (ua e) x  -- STUCK，不歸約\n```\n\nCoq (HoTT library)：\n```\n-- ua 是 axiom\ntransport (ua e) x  -- STUCK\n```\n\nCella：\n```\ntransport (ua e) x  -- = fst e x，實際歸約！\n```\n\n**為什麼？** 因為 Cella 的 `ua` 基於 **Glue types**（CCHM §6），不是公理。Glue types 有完整的 transport 計算規則，所以 `transport (ua e) x` 歸約為 `fst e x`。\n\n**證明是 `refl`**——不是 simp，不是 tactic，是字面上的 `refl`：\n```\ndef transportUa (A B : Type) (e : Equiv A B) (x : A)\n  : transport (ua e) x ≡ fst e x := refl\n```\n\n**實際意義**：\n- `transport (ua notEquiv) true` 歸約為 `not true = false`\n- `transport (ua (idEquiv A)) x` 歸約為 `x`\n- 在 Lean4 中這些都是 stuck term，需要 `simp` 或手動 unfold",
+    "code": "-- stdlib 已有 transportUa，這裡直接驗證\n\n-- ua-β 是 refl：transport (ua e) x ≡ fst e x\n-- 這在 Lean4 中不可能——ua 是 axiom，transport 會 stuck\ntheorem ua_beta_demo {A B : Type} (e : Equiv A B) (x : A)\n  : transport (ua e) x ≡ fst e x := by { rfl }\n\n-- 具體例子：Bool 上的 not 是等價\n-- notEquiv : Equiv Bool Bool（已在 stdlib）\n-- transport (ua notEquiv) true = not true = false\ntheorem transport_not_true : transport (ua notEquiv) true ≡ false := by { rfl }\ntheorem transport_not_false : transport (ua notEquiv) false ≡ true := by { rfl }\n\n-- identity equivalence 的 transport 也能算\ntheorem transport_id_zero : transport (ua (idEquiv Nat)) zero ≡ zero := by { rfl }\ntheorem transport_id_bool : transport (ua (idEquiv Bool)) true ≡ true := by { rfl }\n\n-- 甚至 Either 上也能算\ntheorem transport_id_either\n  : transport (ua (idEquiv (Either Nat Bool))) (left zero : Either Nat Bool)\n  ≡ (left zero : Either Nat Bool) := by { rfl }\n\n-- transportRefl：沿常數路徑 transport 是恆等\ntheorem transport_const {A : Type} (a : A) : transport (fun i => A) a ≡ a := by { rfl }\n",
+    "hint": "在 Lean4 中，如果你用了 `Equiv.ua` 然後 `transport`，結果是 stuck term。在 Cella 中，你拿到的是實際的歸約結果。這不是 syntactic sugar——是 kernel 層級的計算規則。",
     "comparison": {
-      "title": "Kan Operations 覆蓋度",
-      "others": "Lean4: 無 Kan operations（不是 cubical）\nCoq: 無（HoTT library 用 axiom 模擬）\nAgda (cubical): 完整 CCHM，跟 Cella 同級",
-      "cella": "完整 CCHM §2-§8 + n-cell HITs + coinductive + sized types",
-      "diff": "Cella 和 Cubical Agda 在 kernel 層面同級。Lean4/Coq 在根本上缺少 cubical structure。"
+      "title": "ua 計算性——Cubical 的殺手功能",
+      "others": "Lean4: `transport (ua e) x` = **STUCK**（ua 是 axiom）\nCoq: `transport (ua e) x` = **STUCK**（ua 是 axiom）\nAgda (cubical): `transport (ua e) x` = `e .fst x`（跟 Cella 同級）",
+      "cella": "`transport (ua e) x` = `fst e x`（Glue transport 歸約）\n證明 = `refl`，不需要任何 tactic",
+      "diff": "Lean4/Coq 的 ua 是「我聲明等價蘊含路徑」。Cella 的 ua 是「evaluator 真的幫你把值搬過去」。"
     }
   },
   {
     "id": "c5",
-    "title": "C5：Tactic 差異",
-    "concept": "Cella 用 by { } 語法，tactic 產出完整 proof term",
-    "description": "Cella 的 tactic 語法：\n```\ntheorem name : goal := by {\n  induction x;\n  exact refl;\n  rewrite lemma;\n  exact refl\n}\n```\n\n可用的 tactic：\n- `exact term`：直接給 proof term\n- `rewrite lemma`：用等式改寫 goal\n- `induction x`：對 x 歸納（自動生成 `ih` 歸納假設和 `x0` 參數）\n- `cases x`：分情況討論\n\n**跟 Lean4 的差異**：\n- Lean4 有 `simp`、`omega`、`ring` 等強大的自動化 tactic。Cella 目前沒有。\n- 但 Cella 的 tactic **產出完整的 proof term**——你可以看到 tactic 生成了什麼。\n\n### 練習\n\n用 tactic 證明 add n zero == n。",
-    "code": "data Nat = zero | succ Nat\n\ndef add (m : Nat) (n : Nat) : Nat := match m with\n  | zero => n\n  | succ k => succ (add k n)\n\n-- 手動證明（對照用）\ndef addZeroR (n : Nat) : add n zero == n := match n with\n  | zero => refl\n  | succ k => fun i => succ (addZeroR k i)\n\n-- Tactic 證明\ntheorem addZeroR_tac (m : Nat) : add m zero == m := by {\n  induction m;\n  exact refl;\n  rewrite ih;\n  exact refl\n}\n",
-    "hint": null,
+    "title": "C5：HComp 與 Glue",
+    "concept": "hcomp 做路徑合成、Glue types 讓 ua 能算——這是 CCHM §5-§7 的操作。",
+    "description": "**Kan Operations（CCHM 的核心機制）**\n\n1. **transport**（沿型別路徑搬運值）：\n   - Pi: `transport (i ↦ A(i) → B(i)) f = λa. transport B (f (transport A⁻¹ a))`\n   - Sigma: 結構化拆開再組合\n   - PathP: dependent paths 也能 transport\n\n2. **hcomp**（同型別內合成多條路徑）：\n   ```\n   hcomp A [face₁ => path₁ | face₂ => path₂ | ...] base\n   ```\n   `hcomp` 的 system 指定各面的行為，base 是底面。\n\n3. **Glue types**（ua 的基礎）：\n   在邊界 `φ` 上已知等價時，黏合型別。\n   `ua e` 在內部用 Glue 構造：`Glue B [i=0 ↦ (A, e) | i=1 ↦ (B, idEquiv B)]`\n\n**trans 用 hcomp 實作**：\n```\ntrans p q = fun i => hcomp A [i=0 => a | i=1 => q] (p i)\n```\n\n**Cella 完整實作 CCHM §2-§8**：\n- Higher Inductive Types（S¹、Susp、Truncation、Pushout...）\n- n-cell paths（`loop : base ≡ base`）\n- 所有 Kan operations 都有明確的計算規則",
+    "code": "-- hcomp 實戰：路徑合成\n-- trans p q 用 hcomp 定義（已在 stdlib）\n-- 這裡展示 hcomp 的直接使用\n\n-- isPropToIsSet: proposition → set（用 hcomp 構造 square）\n-- 已在 stdlib，這裡重新展示原理\ndef myIsPropToIsSet (A : Type) (h : isProp A)\n  (x y : A) (p : x ≡ y) (q : x ≡ y) : p ≡ q :=\n  fun j => fun i => hcomp A\n    [i = 0 => h x x | i = 1 => h x y\n    | j = 0 => h x (p i) | j = 1 => h x (q i)]\n    (h x x)\n\n-- Higher Inductive Types: S¹ 已在 stdlib\n-- data S1 = base | loop : base ≡ base\n\n-- HIT 的 recursion\ndef myS1rec (B : Type) (b : B) (l : b ≡ b) (x : S1) : B := match x with\n  | base => b\n  | loop => l\n\n-- Suspension: data Susp A = north | south | merid (a : A) : north ≡ south\n-- 這些都是 stdlib 已有的 HIT 定義\n\n-- 路徑代數的 groupoid 法則（全部用 hcomp 證明）\n-- trans p refl ≡ p（右單位元）\n-- trans refl p ≡ p（左單位元）\n-- trans p (sym p) ≡ refl（右逆元）\n-- trans (sym p) p ≡ refl（左逆元）\n-- 這些都在 stdlib 的 foundations 中\n",
+    "hint": "hcomp 的 system 語法：[face₁ => path₁ | face₂ => path₂]。每個 face 是 i=0 或 i=1 的 cofibration condition。base 是未被 system 覆蓋時的底面值。",
     "comparison": {
-      "title": "Tactic 系統",
-      "others": "Lean4: `by induction n <;> simp [*]`（simp 自動化強大）\nAgda: 無 tactic（reflection-based）\nCoq: `induction n; simpl; auto.`（Ltac 成熟）",
-      "cella": "`by { induction m; exact refl; rewrite ih; exact refl }`\n手動但清晰，產出完整 proof term",
-      "diff": "Lean4/Coq 的 tactic 自動化更強。Cella 的 tactic 更透明——你知道證明的每一步在做什麼。"
+      "title": "Kan Operations 覆蓋度",
+      "others": "Lean4: 無 Kan operations（不是 cubical）。`funExt` 和 `ua` 是 axiom。\nCoq (HoTT): 無 Kan operations。用 axiom 模擬 ua。\nAgda (cubical): 完整 CCHM，跟 Cella 同級。",
+      "cella": "完整 CCHM §2-§8 + n-cell HITs（S¹, Susp, Truncation, Pushout）+ hcomp/transport 結構化歸約",
+      "diff": "Cella 和 Cubical Agda 在 kernel 層面同級。Lean4/Coq 在根本上缺少 cubical structure——它們的 funExt 和 ua 是 axiom，沒有計算內容。"
     }
   },
   {
     "id": "c6",
-    "title": "C6：效能與 WASM",
-    "concept": "algebra.cella 400 defs = 78MB RSS。原生 WASM，無需後端。",
-    "description": "Cella 的效能數據：\n\n| 指標 | 數值 |\n|------|------|\n| algebra.cella (400 defs) | 78 MB RSS |\n| nat.cella | 52 MB |\n| stdlib_check (30 tests) | 48 秒 |\n| WASM module 大小 | 1.4 MB |\n| stdlib 載入 | 286 defs |\n\n**為什麼這麼小？**\n- `Closure.body: Rc<Term>`（clone O(1)，不是 deep copy）\n- `Env.vals: im::Vector<Value>`（persistent vector，extend O(log N)）\n- stacker conditional compile for WASM\n\n**WASM 部署**：純前端，無需後端伺服器。Lean4 的 lean4web 是 server-side。Cella playground 完全在瀏覽器執行。\n\n### 練習\n\n你正在用的這個 playground 就是 WASM！試試大一點的程式。",
-    "code": "-- 你現在用的 playground 就是 Cella 編譯成 WASM 在瀏覽器跑的\n-- WASM module 只有 1.4MB，載入 286 個 stdlib 定義\n\ndata Nat = zero | succ Nat\n\ndef add (m : Nat) (n : Nat) : Nat := match m with\n  | zero => n\n  | succ k => succ (add k n)\n\ndef mul (m : Nat) (n : Nat) : Nat := match m with\n  | zero => zero\n  | succ k => add n (mul k n)\n\ndef factorial (n : Nat) : Nat := match n with\n  | zero => succ zero\n  | succ k => mul (succ k) (factorial k)\n\n-- 加法交換律\ndef addZeroR (n : Nat) : add n zero == n := match n with\n  | zero => refl\n  | succ k => fun i => succ (addZeroR k i)\n\ndef addSuccR (n : Nat) (m : Nat) : add n (succ m) == succ (add n m) := match n with\n  | zero => refl\n  | succ k => fun i => succ (addSuccR k m i)\n\n-- 全部在你的瀏覽器裡 type check 完成\n",
-    "hint": null,
+    "title": "C6：Notation 與 Macro",
+    "concept": "operator/mixfix/macro_rules/elab——Lean4 等級的語法擴展能力。",
+    "description": "**Notation 系統（四種形式）**\n\n1. **Fixity notation**（運算子）：\n   ```\n   infixl 65 \"+\" := add\n   infixr 70 \"^\" := pow\n   prefix 100 \"¬\" := not\n   postfix 90 \"!\" := factorial\n   ```\n\n2. **Mixfix notation**（任意語法）：\n   ```\n   notation \"if\" _ \"then\" _ \"else\" _ := ite\n   ```\n\n3. **Macro rules**（pattern → expansion）：\n   ```\n   macro_rules double\n   | double $x => add $x $x\n   ```\n\n4. **Elab rules**（custom elaboration）：\n   ```\n   elab \"keyword\" ParamType : RetType := body\n   ```\n\n**Visibility control**：\n- `local infixl 65 \"+\" := add`（只在當前 scope）\n- `scoped infixl 65 \"+\" := add`（只在 import 時可見）\n\n**跟 Lean4 對照**：\n- Lean4: `infixl:65 \" + \" => HAdd.hAdd`\n- Cella: `infixl 65 \"+\" := add`\n- 語法略有不同但功能等價。Lean4 的 `macro` / `elab` / `syntax` 在 Cella 中有對應。",
+    "code": "-- Fixity notation：定義運算子\ninfixl 65 \"+\" := add\ninfixl 70 \"*\" := mul\nprefix 100 \"~\" := not\n\n-- 現在可以用運算子語法\ndef five : Nat := (succ (succ zero)) + (succ (succ (succ zero)))\n\n-- Mixfix notation：if-then-else 已在 stdlib 預設\n-- notation \"if\" _ \"then\" _ \"else\" _ := ite\n\ndef absVal (n : Nat) (m : Nat) : Nat :=\n  if ltNat n m then sub m n else sub n m\n\n-- 運算子跟路徑配合\ntheorem plus_comm_demo : (succ zero) + (succ (succ zero)) ≡ (succ (succ zero)) + (succ zero) := by {\n  rewrite (addComm (succ zero) (succ (succ zero)));\n  exact refl\n}\n",
+    "hint": "infixl/infixr 的數字是 precedence（binding power）。更高的數字 bind 更緊。典型值：加法 65、乘法 70、否定 100。",
     "comparison": {
-      "title": "部署架構",
-      "others": "Lean4: lean4web = server-side（需要跑 Lean server）\nAgda: 無官方 playground\nCoq: jsCoq 存在但較重",
-      "cella": "純前端 WASM，1.4MB module，無需後端",
-      "diff": "Cella 是原生 WASM 設計。記憶體優化專門針對瀏覽器限制。"
+      "title": "Notation 系統比較",
+      "others": "Lean4: `infixl:65 \" + \" => HAdd.hAdd` + `macro` + `elab` + `syntax`（完整的 metaprogramming）\nAgda: mixfix 很強大（`_+_` 語法），但沒有 macro\nCoq: `Notation` + Ltac 宏",
+      "cella": "`infixl/infixr/prefix/postfix` + `notation` mixfix + `macro_rules` + `elab` + `declare_syntax_cat` + `syntax`",
+      "diff": "功能覆蓋接近 Lean4。Lean4 的 metaprogramming 更成熟（有 MonadTactic）。Cella 的 macro 更輕量。"
     }
   },
   {
     "id": "c7",
-    "title": "C7：一個概念，各式投影",
-    "concept": "ua + transport = 自動版本轉換。概念距離正在研究。",
-    "description": "把前面的差異總結成一個願景：\n\n**Cella 不只是 proof assistant——它是概念的語義層。**\n\n1. **ua compute** → 等價的結構自動互轉\n2. **Transport** → 值沿等價路徑搬運\n3. **概念 = 等價類** → 同構的東西就是同一個概念\n\n實際影響：\n- v1 資料結構 ≃ v2 → transport 自動 migration\n- 不同程式語言的同一概念 → 等價證明 + 自動轉換\n- 不需要 adapter / wrapper / migration script\n\nCella 還在研究如何衡量概念之間的「距離」——不只能判斷「是不是同一個」，還能量化「有多遠」。（細節待發表）\n\n**程式碼只是概念的投影。概念才是本體。**\n\n### 練習\n\n最後回顧：cong 就是「投影保持等式」的具體表達。",
-    "code": "-- 一個概念，各式投影\n-- cong = 投影保持等式\n-- 如果 a == b，那麼 f(a) == f(b)\n\ndef cong {A : Type} {B : Type} (f : A -> B) {a : A} {b : A}\n  (p : a == b) : f a == f b :=\n  fun i => f (p i)\n\n-- 恭喜你完成了老手路線！\n-- 你現在知道 Cella 跟 Lean4/Agda/Coq 的關鍵差異：\n-- ✓ Cubical interval（路徑是函數）\n-- ✓ Transport computes（subst 實際歸約）\n-- ✓ ua computes（等價→相等可計算）\n-- ✓ 原生 WASM（純前端 1.4MB）\n-- ✓ 概念語義層（程式碼是投影，概念是本體）\n",
-    "hint": null,
+    "title": "C7：效能與 WASM",
+    "concept": "WHNF NbE、memoized Susp、837 def stdlib、純前端 WASM 部署。讓 cubical 可用於實務。",
+    "description": "**NbE 架構（Normalization by Evaluation）**\n\n- WHNF（Weak Head Normal Form）策略：只求值到最外層 constructor，不深度 normalize\n- `Closure.body: Rc<Term>`：clone O(1)，不是 deep copy\n- `Env.vals: im::Vector<Value>`：persistent vector，extend O(log N)\n- Memoized `Susp`：lazy evaluation，已求值的不重算\n\n**Stdlib 規模**\n\n| 模組 | 定義數 |\n|------|--------|\n| foundations | 核心路徑代數、transport、univalence、h-level |\n| nat | 自然數算術 + 完整證明 |\n| bool/list/vector/fin | 資料結構 |\n| equiv | 等價、ua-β |\n| hits | S¹、Susp、Truncation、Pushout |\n| algebra | Monoid、Group、Int |\n| functor | Functor/Monad |\n| 總計 | 837 定義 |\n\n**WASM 部署**\n\n你正在使用的這個 playground 就是 Cella 編譯成 WASM 在瀏覽器裡跑的。\n- WASM module ~ 1.4 MB\n- 無需後端伺服器\n- Lean4 的 lean4web 需要 server-side Lean process\n- Agda 沒有官方 playground\n\n**為什麼 cubical 能跑在瀏覽器？**\n\nCella 的記憶體優化（Rc + persistent data structures + WHNF）讓 cubical type checking 在 WASM 的 4GB 記憶體限制內可行。Cubical Agda 目前無法在瀏覽器中運行。",
+    "code": "-- 你正在用的 playground = Cella WASM\n-- 837 個 stdlib 定義已預載\n\n-- 直接使用 stdlib 的證明\n-- addComm, addAssoc, mulComm 等全部可用\n\n-- 驗證 stdlib 的 ua-β\ntheorem ua_compute_demo\n  : transport (ua notEquiv) true ≡ false := by { rfl }\n\n-- 驗證 path algebra\ndef sym_example : succ zero ≡ succ zero :=\n  sym (sym (fun i => succ zero))\n\n-- 使用 stdlib 的 trans（hcomp-based）\ndef trans_example {A : Type} {a b c : A}\n  (p : a ≡ b) (q : b ≡ c) : a ≡ c := trans p q\n\n-- isProp / isSet / isContr 全部可用\ndef prop_example : Type := isProp Nat\ndef set_example : Type := isSet Nat\ndef contr_example : Type := isContr Unit\n\n-- HIT 也可用\ndef circle_loop : base ≡ base := loop\ndef double : base ≡ base := trans loop loop\n\n-- 恭喜完成老手路線！\n-- 你現在知道 Cella 跟 Lean4/Agda/Coq 的關鍵差異：\n-- (1) 路徑 = I → A 的函數（非歸納等式）\n-- (2) transport (ua e) x 能算（非 stuck term）\n-- (3) hcomp + Glue = 完整 CCHM kernel\n-- (4) 28+ tactic + notation/macro 系統\n-- (5) 純前端 WASM，無需後端\n",
+    "hint": "如果你想貢獻 stdlib，Cella 的 lib/ 目錄歡迎 PR。目前 837 定義，目標 20K+。",
     "comparison": {
-      "title": "Cella 的獨特定位",
-      "others": "Lean4: 通用語言 + proof assistant（無 cubical）\nAgda: 研究用 proof assistant（有 cubical，無概念層）\nCoq: 成熟 proof assistant（無 cubical，強 tactic）",
-      "cella": "Cubical CTT + 概念語義層 + 概念距離（研究中）+ 原生 WASM",
-      "diff": "Lean4/Agda/Coq 是工具。Cella 的目標是成為概念操作平台的語義層。"
+      "title": "部署與生態",
+      "others": "Lean4: Mathlib 120K+ 定義，lean4web server-side，成熟工具鏈\nAgda: cubical-agda library，無官方 playground\nCoq: 成熟生態（MathComp/HoTT lib），jsCoq 但較重",
+      "cella": "837 定義 stdlib（成長中）、純前端 WASM、NbE + Rc + persistent DS 記憶體優化",
+      "diff": "Lean4/Coq 生態更成熟。Cella 的獨特價值：(1) ua 能算，(2) 瀏覽器原生，(3) cubical + tactic + notation 完整組合。"
     }
   }
 ]
