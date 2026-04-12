@@ -1,0 +1,16 @@
+{
+  "name": "playground-wasm",
+  "type": "module",
+  "description": "WASM bridge for Cella Playground — type check, compile, run in the browser",
+  "version": "0.1.0",
+  "files": [
+    "playground_wasm_bg.wasm",
+    "playground_wasm.js",
+    "playground_wasm.d.ts"
+  ],
+  "main": "playground_wasm.js",
+  "types": "playground_wasm.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}
