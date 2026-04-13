@@ -101,12 +101,14 @@ function renderMarkdown(md) {
 
   return result
     .replace(/```([^`]*)```/gs, '<pre class="md-codeblock">$1</pre>')
-    .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+    .replace(/^### (.+)$/gm, '<h4>$1</h4>')
     .replace(/^## (.+)$/gm, '<h3>$1</h3>')
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
     .replace(/`([^`]+)`/g, '<code>$1</code>')
-    .replace(/\n\n/g, '<br><br>')
-    .replace(/\n- /g, '<br>• ');
+    .replace(/\n\n/g, '</p><p>')
+    .replace(/\n- /g, '<br>• ')
+    .replace(/\n/g, '<br>')
+    .replace(/^/, '<p>').replace(/$/, '</p>');
 }
 
 // --- Format results ---
@@ -261,10 +263,10 @@ function loadLevel(idx) {
         </div>
         <div class="comparison-col">
           <div class="col-label">Cella</div>
-          <div class="col-content">${renderCompCol(level.comparison.cella)}</div>
+          <div class="col-content">${renderCompCol(level.comparison.cella || '')}</div>
         </div>
       </div>
-      <div class="comparison-diff">→ ${level.comparison.diff}</div>
+      ${level.comparison.diff ? `<div class="comparison-diff">→ ${level.comparison.diff}</div>` : ''}
     `;
   } else {
     tutorialComparison.style.display = 'none';
