@@ -82,8 +82,18 @@ function setSource(text) {
 
 // --- Simple markdown renderer ---
 function renderMarkdown(md) {
-  // First: extract and render tables
-  let result = md.replace(/(\|.+\|[\n])+/g, (block) => {
+  let result = md;
+
+  // Step 1: Extract ``` fences first, protect from all further processing
+  const codeBlocks = [];
+  result = result.replace(/```([^`]*)```/gs, (m, code) => {
+    const idx = codeBlocks.length;
+    codeBlocks.push('<pre class="md-codeblock">' + code.trim() + '</pre>');
+    return '\n%%CODEBLOCK' + idx + '%%\n';
+  });
+
+  // Step 2: Extract and render tables (after code blocks are protected)
+  result = result.replace(/(\|.+\|[\n])+/g, (block) => {
     const rows = block.trim().split('\n').filter(r => r.includes('|'));
     let html = '<table class="md-table">';
     let isFirst = true;
@@ -99,14 +109,12 @@ function renderMarkdown(md) {
     return html;
   });
 
-  // Convert indented lines (2+ spaces) to code blocks
-  result = result.replace(/(^|\n)((?:[ ]{2,}.+\n?)+)/g, (match, pre, block) => {
-    const code = block.replace(/^[ ]{2}/gm, '').trim();
-    return pre + '<pre class="md-codeblock">' + code + '</pre>';
+  // Preserve leading whitespace in non-code lines (convert spaces to &nbsp;)
+  result = result.replace(/\n([ ]{2,})/g, (m, spaces) => {
+    return '\n' + '&nbsp;'.repeat(spaces.length);
   });
 
-  return result
-    .replace(/```([^`]*)```/gs, '<pre class="md-codeblock">$1</pre>')
+  result = result
     .replace(/^### (.+)$/gm, '<h4>$1</h4>')
     .replace(/^## (.+)$/gm, '<h3>$1</h3>')
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
@@ -115,6 +123,13 @@ function renderMarkdown(md) {
     .replace(/\n- /g, '<br>• ')
     .replace(/\n/g, '<br>')
     .replace(/^/, '<p>').replace(/$/, '</p>');
+
+  // Restore code blocks (break out of <p> context)
+  codeBlocks.forEach((block, idx) => {
+    result = result.replace('%%CODEBLOCK' + idx + '%%', '</p>' + block + '<p>');
+  });
+
+  return result;
 }
 
 // --- Format results ---
