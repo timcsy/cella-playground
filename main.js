@@ -210,7 +210,16 @@ async function enterTutorial(routeId) {
 // --- Tutorial rendering ---
 function renderLevelsSidebar() {
   sidebarContent.innerHTML = '';
+  let lastSection = null;
   currentLevels.forEach((level, idx) => {
+    // Insert section header if level has a new section
+    if (level.section && level.section !== lastSection) {
+      const header = document.createElement('div');
+      header.className = 'section-header';
+      header.textContent = level.section;
+      sidebarContent.appendChild(header);
+      lastSection = level.section;
+    }
     const btn = document.createElement('button');
     btn.className = 'level-item' + (idx === currentLevelIdx ? ' active' : '') +
       (isLevelCompleted(currentRoute.id, level.id) ? ' completed' : '');

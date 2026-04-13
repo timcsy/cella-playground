@@ -9,7 +9,8 @@
     "comparison": {
       "math": "∀n∈ℕ, n+0=n — 用歸納法證明，基底情況 + 歸納步",
       "cella": "def addZeroR (n : Nat) : add n zero ≡ n := match n with ... — match 就是歸納，refl 就是「計算即得」"
-    }
+    },
+    "section": "Part 1：你熟悉的數學"
   },
   {
     "id": "b2",
@@ -21,7 +22,8 @@
     "comparison": {
       "math": "命題 P 為真 ↔ P 有證明；P 為假 ↔ P 無證明。宇宙 U 包含所有集合。",
       "cella": "命題 P 為真 ↔ 型別 P 有居民；P 為假 ↔ P 是空型別。Type 包含所有型別。def x : T := v 定義一個居民。"
-    }
+    },
+    "section": "Part 1：你熟悉的數學"
   },
   {
     "id": "b3",
@@ -33,7 +35,8 @@
     "comparison": {
       "math": "經典邏輯：反證法（假設 ¬P 推矛盾）。∃x.P(x) 只需知道「存在」，不需指出 x。",
       "cella": "構造邏輯：必須給出見證者。∃x.P(x) = (x : A) × P x，你必須提供 x 和 P x 的證明。程式 = 證明。"
-    }
+    },
+    "section": "Part 1：你熟悉的數學"
   },
   {
     "id": "b4",
@@ -45,7 +48,8 @@
     "comparison": {
       "math": "P → Q 是蘊含，Modus Ponens 是推理規則：從 P 和 P → Q 推出 Q。",
       "cella": "P -> Q 是函數型別，Modus Ponens 就是函數應用 f a。fun x => body 是 λ-表達式。蘊含和函數是同一個東西。"
-    }
+    },
+    "section": "Part 1：你熟悉的數學"
   },
   {
     "id": "b5",
@@ -57,7 +61,8 @@
     "comparison": {
       "math": "Peano 公理：0 ∈ ℕ，n ∈ ℕ → S(n) ∈ ℕ，加上歸納原理。",
       "cella": "data Nat = zero | succ Nat。data 定義歸納型別，zero 和 succ 是構造子，| 分隔不同情況。歸納原理由 match 提供。"
-    }
+    },
+    "section": "Part 2：自然數的形式化"
   },
   {
     "id": "b6",
@@ -69,7 +74,8 @@
     "comparison": {
       "math": "歸納法：證明 P(0)，再假設 P(k) 證明 P(k+1)。",
       "cella": "match n with | zero => ... | succ k => ... 就是歸納法。zero 分支 = 基底，succ k 分支 = 歸納步，遞迴呼叫 = 使用歸納假設。"
-    }
+    },
+    "section": "Part 2：自然數的形式化"
   },
   {
     "id": "b7",
@@ -81,7 +87,8 @@
     "comparison": {
       "math": "數學論文引用已知定理：「由交換律知 m+n=n+m。」",
       "cella": "直接引用 stdlib：addComm m n : add m n ≡ add n m。用 trans 串接 = 論文裡的「由 ... 和 ... 知」。用 cong f p = 「對兩邊套 f」。"
-    }
+    },
+    "section": "Part 2：自然數的形式化"
   },
   {
     "id": "b8",
@@ -93,7 +100,8 @@
     "comparison": {
       "math": "∀x∈A. P(x)——全稱量化。證明方法：「設 x∈A 為任意元素，則...」",
       "cella": "(x : A) -> P x——依賴函數型別。構造方法：fun x => ...（對任意 x 給出 P x 的值）。{x : A} 是隱式參數，Cella 自動推斷。"
-    }
+    },
+    "section": "Part 2：自然數的形式化"
   },
   {
     "id": "b9",
@@ -105,7 +113,8 @@
     "comparison": {
       "math": "a = b 是原子命題，沒有內部結構。所有 a=a 的證明都「一樣」。",
       "cella": "a ≡ b 是路徑空間。fun i => ... 是具體的路徑。I 是抽象區間，0 是起點，1 是終點。不同路徑 = 不同的等法（有結構）。"
-    }
+    },
+    "section": "Part 3：等式的結構"
   },
   {
     "id": "b10",
@@ -117,7 +126,8 @@
     "comparison": {
       "math": "對稱性：a = b → b = a。在傳統邏輯中是一條推理規則，沒有計算內容。",
       "cella": "sym p = fun i => p (1-i)。路徑反轉有具體的計算意義：沿區間翻轉方向。1 - i 是維度代數運算。"
-    }
+    },
+    "section": "Part 3：等式的結構"
   },
   {
     "id": "b11",
@@ -129,7 +139,8 @@
     "comparison": {
       "math": "替換律：a = b → f(a) = f(b)。或者 Leibniz 律：a = b → ∀P. P(a) → P(b)。",
       "cella": "cong f p = fun i => f (p i)。函數在路徑的每一點上作用。這是 functoriality 的直接表達——有計算內容，不是公理。"
-    }
+    },
+    "section": "Part 3：等式的結構"
   },
   {
     "id": "b12",
@@ -141,7 +152,8 @@
     "comparison": {
       "math": "歸納法：基底 P(0)，歸納步 P(k)→P(k+1)。歸納假設用「由 IH 知」引用。",
       "cella": "match 的 zero 分支 = 基底，succ k 分支 = 歸納步。遞迴呼叫 = 歸納假設。fun i => succ (IH i) = cong succ IH = 「兩邊套 succ」。"
-    }
+    },
+    "section": "Part 3：等式的結構"
   },
   {
     "id": "b13",
@@ -153,7 +165,8 @@
     "comparison": {
       "math": "數學裡沒有明確區分——「由定義」和「由歸納」都是「顯然」。但在形式證明中這個區分至關重要。",
       "cella": "refl 只能證明計算型等式（兩邊歸約為同一項）。命題等式需要 match + 遞迴（歸納）或其他路徑構造。add 對第一引數 match，所以 add zero n = n 是 refl，add n zero = n 需要歸納。"
-    }
+    },
+    "section": "Part 3：等式的結構"
   },
   {
     "id": "b14",
@@ -165,7 +178,8 @@
     "comparison": {
       "math": "替換律：a = b, P(a) ⊢ P(b)。在 ZFC 中這是公理或推理規則。",
       "cella": "transport (fun i => P (p i)) pa : P b。transport 可計算——不只保證存在，還把值算出來。transport (fun i => A) x = x 是 refl。"
-    }
+    },
+    "section": "Part 4：搬運和等價"
   },
   {
     "id": "b15",
@@ -177,7 +191,8 @@
     "comparison": {
       "math": "雙射 f : A → B，存在逆 g 使 g∘f=id, f∘g=id。逆函數可能有多種選擇。",
       "cella": "Equiv A B = (f : A -> B) × isEquiv f。isEquiv 用纖維可縮性定義，保證等價見證本質唯一。fst e 是正向函數，比雙射更「同倫正確」。"
-    }
+    },
+    "section": "Part 4：搬運和等價"
   },
   {
     "id": "b16",
@@ -189,7 +204,8 @@
     "comparison": {
       "math": "在 HoTT 中，Univalence 公理說「等價的型別相等」。但作為公理，它沒有計算內容。",
       "cella": "ua : Equiv A B → A ≡ B，且 transport (ua e) x = fst e x 可計算（refl 即證）。Lean4 的 ua 是公理（stuck），Cella 的 ua 基於 Glue types 提供完整歸約。"
-    }
+    },
+    "section": "Part 4：搬運和等價"
   },
   {
     "id": "b17",
@@ -201,7 +217,8 @@
     "comparison": {
       "math": "在集合論中，所有等式都是命題（proof irrelevant）——不區分層級。ℕ 和 Type 都是「集合」。",
       "cella": "isContr / isProp / isSet / isGroupoid / ... 是可證明的性質。Nat 是 isSet，但 Type 不是（ua 提供非平凡的自等價路徑）。層級向上封閉。"
-    }
+    },
+    "section": "Part 4：搬運和等價"
   },
   {
     "id": "b18",
@@ -213,6 +230,7 @@
     "comparison": {
       "math": "在數學中，同構的結構「本質上相同」——但形式上仍然不同，需要手動來回轉換。",
       "cella": "ua 讓等價成為相等。transport 自動搬運。不需手動 adapter。概念是等價類，程式碼是投影——結構決定同一性。"
-    }
+    },
+    "section": "Part 4：搬運和等價"
   }
 ]

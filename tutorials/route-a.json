@@ -6,7 +6,8 @@
     "description": "歡迎來到 Cella！這是你和電腦對話的地方。\n\n在下方的程式編輯區裡，你會看到兩種東西：\n- 以 **`--` 兩條橫線開頭**的行：是寫給你看的筆記，電腦會完全忽略它\n- **沒有** `--` 開頭的行：是寫給電腦看的指令\n\n我們來認識下面那行白色指令裡的每個符號：\n- `def` = 「我要告訴電腦一件事」\n- `main` = 這件事的名字叫 main（程式的起點）\n- `:` = 「它屬於」\n- `IO Unit` = 「會做一件事然後結束」的種類\n- `:=` = 「它的內容是」\n- `putNat` = 「把數字印出來」\n- `succ` = 「下一個」（比如 1 的下一個是 2）\n- `zero` = 「零」\n- `succ (succ (succ zero))` = 0 的下一個的下一個的下一個 = 3\n- 小括號 `( )` = 把東西包在一起，告訴電腦先算裡面的\n\n現在，按下右上角的 **Run** 按鈕！",
     "code": "-- 這是筆記，電腦會忽略這行\n-- 兩個減號 -- 後面的文字都是筆記\n\n-- 下面這行是給電腦的指令：\n-- 把 3 印出來\ndef main : IO Unit := putNat (succ (succ (succ zero)))",
     "hint": "按下 Run 按鈕，你應該會在下方看到數字 3 出現！",
-    "comparison": null
+    "comparison": null,
+    "section": "Part 1：你在看什麼"
   },
   {
     "id": "a2",
@@ -15,7 +16,8 @@
     "description": "在 Cella 裡，數字是這樣表達的：\n- `zero` = 0\n- `succ zero` = 0 的下一個 = 1\n- `succ (succ zero)` = 2\n- `succ (succ (succ zero))` = 3\n\n每加一層 `succ`，數字就大 1。小括號 `( )` 告訴電腦「先看裡面的東西」。\n\n你的挑戰：把下面的程式改成印出 **5**。\n\n提示：5 需要幾層 `succ`？",
     "code": "-- 現在印的是 3\n-- 挑戰：改成印出 5\n-- 提示：5 = succ (succ (succ (succ (succ zero))))\n\ndef main : IO Unit := putNat (succ (succ (succ zero)))",
     "hint": "把 succ (succ (succ zero)) 改成 succ (succ (succ (succ (succ zero))))，然後按 Run，應該看到 5。",
-    "comparison": null
+    "comparison": null,
+    "section": "Part 1：你在看什麼"
   },
   {
     "id": "a3",
@@ -24,7 +26,8 @@
     "description": "每次都寫一堆 `succ` 很麻煩，我們可以幫數字取名字！\n\n一行 `def` 有三個部分：\n- `def three` = 「我要定義一個叫 three 的東西」\n- `: Nat` = 「它屬於 Nat 這個種類」（Nat = 自然數，就是 0, 1, 2, 3...）\n- `:= succ (succ (succ zero))` = 「它的內容是 3」\n\n取好名字之後，就可以用名字代替那一堆 `succ` 了。\n\n你的挑戰：幫數字 4 取個名字叫 `four`。",
     "code": "-- def 名字 : 種類 := 內容\n\n-- 幫 3 取名字\ndef three : Nat := succ (succ (succ zero))\n\n-- 挑戰：在下面加一行，定義 four\n-- 提示：4 = succ (succ (succ (succ zero)))\n\n-- 用名字來印數字\ndef main : IO Unit := putNat three",
     "hint": "加一行 def four : Nat := succ (succ (succ (succ zero)))，然後把 putNat three 改成 putNat four，按 Run 看到 4。",
-    "comparison": null
+    "comparison": null,
+    "section": "Part 2：跟電腦說話"
   },
   {
     "id": "a4",
@@ -33,7 +36,8 @@
     "description": "在 Cella 裡，每個東西都有一個**種類**（寫在 `:` 後面）。\n\n常見的種類：\n- `Nat` = 自然數（0, 1, 2, 3...）。它的成員有 `zero`、`succ zero`、`succ (succ zero)`...\n- `Bool` = 對或錯。它只有兩個成員：`true`（對）和 `false`（錯）\n\n種類就像容器的標籤：\n- `zero` 屬於 `Nat`（寫成 `zero : Nat`）\n- `true` 屬於 `Bool`（寫成 `true : Bool`）\n\n`: Nat` 告訴電腦「這個東西應該是自然數」。",
     "code": "-- zero 屬於 Nat\ndef myZero : Nat := zero\n\n-- succ (succ zero) 屬於 Nat\ndef two : Nat := succ (succ zero)\n\n-- true 屬於 Bool\ndef myTrue : Bool := true\n\n-- false 也屬於 Bool\ndef myFalse : Bool := false\n\n-- 印出 two\ndef main : IO Unit := putNat two",
     "hint": "試試把 putNat two 改成 putNat myZero，按 Run，應該看到 0。",
-    "comparison": null
+    "comparison": null,
+    "section": "Part 2：跟電腦說話"
   },
   {
     "id": "a5",
@@ -42,7 +46,8 @@
     "description": "如果你把種類搞錯了，電腦會報錯！\n\n比如你說「x 屬於 Nat（自然數）」但是給了 `true`（對或錯），電腦就會說：「不對，true 不是自然數！」\n\n這不是電腦在刁難你，而是在**保護你**——就像把牛奶倒進標了「果汁」的瓶子，電腦會提醒你放錯了。\n\n按 Check 看看錯誤訊息長什麼樣！\n\n你的挑戰：試試看其他「故意放錯」的組合。",
     "code": "-- 這行會出錯！\n-- 我們說 x 屬於 Nat（自然數）\n-- 但是給了 true（屬於 Bool）\n-- 電腦會說：種類不對！\ndef x : Nat := true\n\n-- 把上面那行修好：\n-- 方法 1：把 Nat 改成 Bool\n-- 方法 2：把 true 改成 zero",
     "hint": "按 Check 看到錯誤後，試試把 def x : Nat := true 改成 def x : Bool := true 或 def x : Nat := zero，錯誤就消失了。",
-    "comparison": null
+    "comparison": null,
+    "section": "Part 2：跟電腦說話"
   },
   {
     "id": "a6",
@@ -51,7 +56,8 @@
     "description": "Cella 內建了 `add`，意思是「加」。\n\n`add` 後面放兩個數字，電腦就會幫你算出來：\n- `add zero (succ zero)` = 0 + 1 = 1\n- `add (succ zero) (succ zero)` = 1 + 1 = 2\n\n你也可以用之前取好的名字！\n\n你的挑戰：算 `add two three`，按 Run 看看答案。",
     "code": "-- 先取一些名字\ndef two : Nat := succ (succ zero)\ndef three : Nat := succ (succ (succ zero))\n\n-- add 是加法\n-- add two three = 2 + 3\n\n-- 挑戰：把 ??? 換成 add two three\ndef main : IO Unit := putNat (add two three)",
     "hint": "按 Run，你應該看到 5。試試改成 add three three，看到 6。",
-    "comparison": null
+    "comparison": null,
+    "section": "Part 2：跟電腦說話"
   },
   {
     "id": "a7",
@@ -60,7 +66,8 @@
     "description": "到目前為止，我們的 `def` 都是固定的值。但我們也可以做一台**機器**——放東西進去，它會吐出結果。\n\n`def addOne (n : Nat) : Nat := succ n`\n\n這台機器叫 `addOne`，它的說明書是：\n- `(n : Nat)` = 「放一個叫 n 的自然數進去」\n- `: Nat` = 「吐出來的也是自然數」\n- `:= succ n` = 「吐出 n 的下一個」\n\n放東西進機器：`addOne zero` = 放 0 進去 = 吐出 1。\n\n你的挑戰：做一台 `addTwo` 機器。",
     "code": "-- 機器 addOne：放一個數字進去，加 1 吐出來\n-- (n : Nat) 表示「放進去的東西叫 n，屬於 Nat」\ndef addOne (n : Nat) : Nat := succ n\n\n-- 挑戰：做一台 addTwo 機器\n-- 提示：加 2 就是 succ (succ n)\n-- def addTwo (n : Nat) : Nat := ???\n\n-- 放 zero 進 addOne → 得到 1\ndef main : IO Unit := putNat (addOne zero)",
     "hint": "加上 def addTwo (n : Nat) : Nat := succ (succ n)，然後把 main 改成 putNat (addTwo zero)，按 Run 看到 2。",
-    "comparison": null
+    "comparison": null,
+    "section": "Part 3：做一台機器"
   },
   {
     "id": "a8",
@@ -69,7 +76,8 @@
     "description": "機器做好之後，可以到處使用，還可以串在一起！\n\n`addOne (addOne zero)`\n- 先算裡面：`addOne zero` = 1\n- 再算外面：`addOne 1` = 2\n\n`add (addOne zero) (addOne (addOne zero))`\n- 先算 `addOne zero` = 1\n- 再算 `addOne (addOne zero)` = 2\n- 最後 `add 1 2` = 3\n\n你的挑戰：用 addOne 和 add 算出 4。",
     "code": "-- 機器 addOne\ndef addOne (n : Nat) : Nat := succ n\n\n-- 串在一起用\n-- addOne (addOne zero) = 2\n-- add (addOne zero) (addOne (addOne zero)) = 1 + 2 = 3\n\ndef main : IO Unit := putNat (add (addOne zero) (addOne (addOne zero)))",
     "hint": "試試 putNat (add (addOne (addOne zero)) (addOne (addOne zero)))，就是 2 + 2 = 4。或者 putNat (addOne (addOne (addOne (addOne zero))))。",
-    "comparison": null
+    "comparison": null,
+    "section": "Part 3：做一台機器"
   },
   {
     "id": "a9",
@@ -78,7 +86,8 @@
     "description": "有時候，機器需要先**打開**放進來的東西，看看裡面是什麼，再決定怎麼做。\n\n`match n with` = 「打開 n 看看」\n`| zero => ...` = 「如果是 zero，就...」\n`| succ k => ...` = 「如果是 succ k（某個數的下一個），就...」\n\n注意：\n- `|` 唸做「或者」，分隔不同情況\n- `=>` 唸做「就」\n- `k` 是我們隨便取的名字，代表「打開 succ 後看到的那個數字」\n\n你的挑戰：做一台 `isOne` 機器，只有放 1 進去才回答 `true`。",
     "code": "-- isZero：打開看，如果是 zero 就回答 true，其他都回答 false\ndef isZero (n : Nat) : Bool := match n with\n  | zero => true\n  | succ k => false\n\n-- 挑戰：做 isOne\n-- 如果是 succ zero（也就是 1）就回答 true，其他回答 false\n-- 提示：打開看到 succ k 後，再打開 k 看看\n-- def isOne (n : Nat) : Bool := match n with\n--   | zero => false\n--   | succ k => ???\n\ndef main : IO Unit := putNat (succ zero)",
     "hint": "isOne 要打開兩層：match n with | zero => false | succ k => (match k with | zero => true | succ j => false)。試試看！",
-    "comparison": null
+    "comparison": null,
+    "section": "Part 3：做一台機器"
   },
   {
     "id": "a10",
@@ -87,7 +96,8 @@
     "description": "現在我們來做一個更厲害的機器：**自己做加法**！\n\n思路：`myAdd m n` 要算 m + n\n- 打開 m 看看\n- 如果 m 是 `zero`：0 + n = n，直接回答 n\n- 如果 m 是 `succ k`：(k+1) + n = (k + n) + 1，先算 `myAdd k n`，再加 1\n\n注意 `succ k` 那行：我們用了 `myAdd k n`——**機器用了自己的名字**！這叫做「自己叫自己」，電腦會一層一層拆開，直到遇到 `zero` 為止。\n\n和內建的 `add` 比比看，結果一樣！",
     "code": "-- 自己做的加法機器\n-- 打開第一個數 m 看看\ndef myAdd (m : Nat) (n : Nat) : Nat := match m with\n  | zero => n\n  | succ k => succ (myAdd k n)\n\n-- 試算：myAdd 2 3\ndef two : Nat := succ (succ zero)\ndef three : Nat := succ (succ (succ zero))\n\n-- 用我們自己的 myAdd\ndef main : IO Unit := putNat (myAdd two three)",
     "hint": "按 Run 看到 5。你的 myAdd 和內建的 add 做的事一模一樣！試試 myAdd three three 看到 6。",
-    "comparison": null
+    "comparison": null,
+    "section": "Part 3：做一台機器"
   },
   {
     "id": "a11",
@@ -96,7 +106,8 @@
     "description": "之前我們用過 `Nat` 和 `Bool`，它們是別人幫你做好的。現在你可以自己**發明新種類**！\n\n`data Color = red | green | blue`\n\n這行的意思是：\n- `data` = 「我要發明一個新種類」\n- `Color` = 這個種類叫 Color\n- `=` = 「它的成員有」\n- `red | green | blue` = 三個成員，用 `|`（唸「或者」）分開\n\n發明之後，`red` 就屬於 `Color`，就像 `zero` 屬於 `Nat` 一樣。\n\n你的挑戰：發明一個叫 `Animal` 的種類，有 `cat`、`dog`、`fish` 三個成員。",
     "code": "-- 發明一個新種類 Color\n-- 有三個成員：red, green, blue\ndata Color = red | green | blue\n\n-- 用新種類取名字\ndef myColor : Color := red\ndef anotherColor : Color := blue\n\n-- 挑戰：在下面發明 Animal 種類\n-- data Animal = ???\n\n-- 打開看看是什麼顏色\ndef isRed (c : Color) : Bool := match c with\n  | red => true\n  | green => false\n  | blue => false\n\ndef main : IO Unit := putNat (succ zero)",
     "hint": "加上 data Animal = cat | dog | fish，然後試試 def myPet : Animal := cat。",
-    "comparison": null
+    "comparison": null,
+    "section": "Part 4：自己造種類"
   },
   {
     "id": "a12",
@@ -105,7 +116,8 @@
     "description": "還記得 `Nat` 和 `Bool` 嗎？它們不是魔法——只是有人幫你用 `data` 定義好了而已！\n\nNat 的定義：`data Nat = zero | succ Nat`\n- `zero` = 沒有東西（0）\n- `succ Nat` = 「下一個」後面還要接一個 Nat\n\nBool 的定義：`data Bool = true | false`\n- 就兩個成員，沒有別的了\n\n`succ Nat` 裡的 `Nat` 表示 `succ` 後面要放一個 Nat。所以 `succ zero` 合法（zero 是 Nat），`succ true` 不合法（true 不是 Nat）。\n\n你在上一關發明的 `Color`，和 `Bool` 一樣簡單！",
     "code": "-- 標準庫裡 Nat 的定義長這樣：\n-- data Nat = zero | succ Nat\n--\n-- 標準庫裡 Bool 的定義長這樣：\n-- data Bool = true | false\n--\n-- 你看，就和你在上一關做的 Color 一樣！\n-- 不是魔法，只是有人先寫好了而已。\n\n-- 標準庫裡 add 的定義也只是 match：\n-- def add (m : Nat) (n : Nat) : Nat := match m with\n--   | zero => n\n--   | succ k => succ (add k n)\n--\n-- 和你在第 10 關寫的 myAdd 一模一樣！\n\ndef two : Nat := succ (succ zero)\ndef three : Nat := succ (succ (succ zero))\n\ndef main : IO Unit := putNat (add two three)",
     "hint": "所有內建的東西，都是有人像你一樣一行一行寫出來的。你已經會做一樣的事了！",
-    "comparison": null
+    "comparison": null,
+    "section": "Part 4：自己造種類"
   },
   {
     "id": "a13",
@@ -114,7 +126,8 @@
     "description": "讓我們再仔細看一次加法的完整思路：\n\n要算 `m + n`，我們打開 m：\n- 如果 m 是 `zero`：`0 + n = n`\n- 如果 m 是 `succ k`：`(k+1) + n = (k + n) + 1`\n\n第二種情況用了 `myAdd k n`（自己叫自己），因為 k 比 m 小 1，最後一定會走到 `zero` 停下來。\n\n比如算 `myAdd (succ (succ zero)) (succ zero)` = 2 + 1：\n1. m = succ (succ zero)，打開得 k = succ zero → succ (myAdd (succ zero) (succ zero))\n2. m = succ zero，打開得 k = zero → succ (myAdd zero (succ zero))\n3. m = zero → succ zero\n4. 往回組裝：succ (succ (succ zero)) = 3\n\n你的挑戰：自己寫一台 `myMul`（乘法）機器。",
     "code": "-- 自己寫的加法（和標準庫的 add 一樣）\ndef myAdd (m : Nat) (n : Nat) : Nat := match m with\n  | zero => n\n  | succ k => succ (myAdd k n)\n\n-- 挑戰：自己寫乘法 myMul\n-- 思路：m * n\n-- 如果 m 是 zero：0 * n = 0\n-- 如果 m 是 succ k：(k+1) * n = n + (k * n)\n-- def myMul (m : Nat) (n : Nat) : Nat := match m with\n--   | zero => ???\n--   | succ k => ???\n\ndef two : Nat := succ (succ zero)\ndef three : Nat := succ (succ (succ zero))\n\ndef main : IO Unit := putNat (myAdd two three)",
     "hint": "myMul 的答案：zero 時回答 zero，succ k 時回答 add n (myMul k n)。試試 putNat (myMul two three) 看到 6。",
-    "comparison": null
+    "comparison": null,
+    "section": "Part 4：自己造種類"
   },
   {
     "id": "a14",
@@ -123,7 +136,8 @@
     "description": "到目前為止，我們一直在**做東西**（定義數字、做機器）。現在我們要學一件全新的事：**問問題**。\n\n`add (succ zero) (succ zero) ≡ succ (succ zero)`\n\n這個 `≡` 唸做「等於」，意思是「左邊和右邊一樣嗎？」\n\n上面那行在問：「1 + 1 等於 2 嗎？」\n\n注意：這只是**問題**，還不是**回答**。就像考卷上的題目，你還沒寫答案。\n\n問題也是一種「種類」——`add (succ zero) (succ zero) ≡ succ (succ zero)` 是一個種類，它的成員就是「證據」。",
     "code": "-- ≡ 用來問問題\n-- 下面這行在問：1 + 1 等於 2 嗎？\n-- myQuestion 的種類是「1 + 1 ≡ 2」\n-- := 後面要放「回答」（我們下一關再學）\n\ndef two : Nat := succ (succ zero)\ndef one : Nat := succ zero\n\n-- 先看看 add one one 真的等於 two\ndef main : IO Unit := putNat (add one one)",
     "hint": "按 Run 看到 2。1 + 1 確實是 2！但電腦怎麼「確認」這件事？下一關揭曉。",
-    "comparison": null
+    "comparison": null,
+    "section": "Part 5：讓電腦確認"
   },
   {
     "id": "a15",
@@ -132,7 +146,8 @@
     "description": "上一關我們學會了用 `≡` 問問題。現在要學怎麼**回答**。\n\n最簡單的回答是 `refl`（唸做 reflect，意思是「映照」）。\n\n`refl` 的意思是：「我讓電腦把左邊和右邊都算一算，結果一模一樣！」\n\n比如 `add (succ zero) (succ zero) ≡ succ (succ zero)`：\n- 左邊：`add (succ zero) (succ zero)` → 電腦算 → `succ (succ zero)`\n- 右邊：`succ (succ zero)`\n- 一樣！所以 `refl` 就是答案。\n\n寫成一行：\n`def proof : add (succ zero) (succ zero) ≡ succ (succ zero) := refl`\n\n這就像說：「我宣稱 1+1=2，證據是你算算看就知道了。」",
     "code": "def one : Nat := succ zero\ndef two : Nat := succ (succ zero)\ndef three : Nat := succ (succ (succ zero))\n\n-- 問題：1 + 1 等於 2 嗎？\n-- 回答：refl（算一算就知道了）\ndef proof1 : add one one ≡ two := refl\n\n-- 問題：2 + 1 等於 3 嗎？\ndef proof2 : add two one ≡ three := refl\n\n-- 問題：0 + 3 等於 3 嗎？\ndef proof3 : add zero three ≡ three := refl\n\n-- 按 Check 看看——三個問題都回答正確！\ndef main : IO Unit := putNat three",
     "hint": "按 Check，如果沒有錯誤，表示三個回答都正確！試試加一個 def proof4 : add one two ≡ three := refl。",
-    "comparison": null
+    "comparison": null,
+    "section": "Part 5：讓電腦確認"
   },
   {
     "id": "a16",
@@ -141,7 +156,8 @@
     "description": "如果你亂回答，電腦會抓到！\n\n比如你說「1 + 1 = 3」然後用 `refl` 回答：\n- 左邊：`add one one` → 算一算 → `succ (succ zero)` = 2\n- 右邊：`three` = `succ (succ (succ zero))` = 3\n- 2 和 3 不一樣！`refl` 失敗！\n\n電腦會報錯，不讓你過關。你沒辦法騙電腦。\n\n你的挑戰：按 Check 看看錯誤訊息，然後把錯誤的那行修好。",
     "code": "def one : Nat := succ zero\ndef two : Nat := succ (succ zero)\ndef three : Nat := succ (succ (succ zero))\n\n-- 這行是對的：1 + 1 = 2\ndef good : add one one ≡ two := refl\n\n-- 這行是錯的！1 + 1 不等於 3\n-- 按 Check 會出錯\ndef bad : add one one ≡ three := refl\n\ndef main : IO Unit := putNat one",
     "hint": "把 bad 那行改成 add one two ≡ three 或 add one one ≡ two，錯誤就消失了。你沒辦法騙電腦！",
-    "comparison": null
+    "comparison": null,
+    "section": "Part 5：讓電腦確認"
   },
   {
     "id": "a17",
@@ -150,7 +166,8 @@
     "description": "回顧一下我們做了什麼：\n\n`def proof : add one one ≡ two := refl`\n\n這行有兩個部分：\n- **宣稱**（`:` 後面）：`add one one ≡ two`（1 + 1 = 2）\n- **證據**（`:=` 後面）：`refl`（算一算就知道了）\n\n宣稱 + 證據 = **證明**。\n\n按下 Check，電腦會檢查你的證據是否真的支持你的宣稱。如果通過了，恭喜——你寫出了一個**數學定理**！\n\n這就是 Cella 最特別的地方：寫程式和寫數學證明是同一件事。",
     "code": "def one : Nat := succ zero\ndef two : Nat := succ (succ zero)\ndef five : Nat := succ (succ (succ (succ (succ zero))))\n\n-- 每一行都是一個定理！\n-- 宣稱在 : 後面，證據在 := 後面\n\n-- 定理 1：0 + 1 = 1\ndef thm1 : add zero one ≡ one := refl\n\n-- 定理 2：1 + 1 = 2\ndef thm2 : add one one ≡ two := refl\n\n-- 定理 3：2 + 2 + 1 = 5\ndef thm3 : add (add two two) one ≡ five := refl\n\n-- 按 Check —— 你剛剛證明了三個數學定理！\ndef main : IO Unit := putNat five",
     "hint": "Check 通過了嗎？恭喜，你寫了三個正確的數學定理！這不只是程式，這是數學證明。",
-    "comparison": null
+    "comparison": null,
+    "section": "Part 5：讓電腦確認"
   },
   {
     "id": "a18",
@@ -159,7 +176,8 @@
     "description": "`refl` 很好用，但有一個限制：它只在電腦能**把兩邊都算出來**的時候有用。\n\n如果我們問：「對所有自然數 n，n + 0 = n 嗎？」\n\n`def addZeroR (n : Nat) : add n zero ≡ n := refl`\n\n這行會失敗！為什麼？\n\n回想 add 的定義：`match m with | zero => n | succ k => ...`\n\nadd 是打開**第一個**數字的。當第一個數字是 `n`（未知），電腦不知道該走 zero 還是 succ，所以算不下去。\n\n`add zero n` → 打開 zero → 得到 n（成功！）\n`add n zero` → 打開 n → n 是什麼？不知道！（卡住！）\n\n那該怎麼辦？下一關告訴你。",
     "code": "def one : Nat := succ zero\n\n-- 這行沒問題：add zero n，打開 zero，得到 n\ndef addZeroL (n : Nat) : add zero n ≡ n := refl\n\n-- 這行會出錯！add n zero，n 未知，算不了\n-- 把下面這行取消筆記（刪掉 --）試試看\n-- def addZeroR (n : Nat) : add n zero ≡ n := refl\n\ndef main : IO Unit := putNat one",
     "hint": "把 -- def addZeroR 那行的 -- 刪掉，按 Check 看到錯誤。add n zero 在 n 未知時算不出來，refl 就不夠用了。",
-    "comparison": null
+    "comparison": null,
+    "section": "Part 5：讓電腦確認"
   },
   {
     "id": "a19",
@@ -168,7 +186,8 @@
     "description": "refl 不夠用的時候怎麼辦？用 `match` 打開那個未知的數字！\n\n要證明 `add n zero ≡ n`，我們打開 n 看看：\n\n**情況 1：n 是 zero**\n- `add zero zero` → 算一算 → `zero`\n- 要證 `zero ≡ zero`\n- `refl`！\n\n**情況 2：n 是 succ k**\n- `add (succ k) zero` → 算一算 → `succ (add k zero)`\n- 要證 `succ (add k zero) ≡ succ k`\n- 如果我們已經知道 `add k zero ≡ k`（這就是 `addZeroR k`）\n- 那只要在外面包一層 `succ` 就好\n- `cong succ (addZeroR k)` = 「在等式兩邊都加一層 succ」\n\n`cong f p` 的意思是：如果 `p` 說「a 和 b 一樣」，那 `cong f p` 說「f a 和 f b 也一樣」。",
     "code": "-- 證明：對所有 n，add n zero ≡ n\n-- match n 打開看看\n-- zero 的情況用 refl\n-- succ k 的情況：用 addZeroR k（自己叫自己！）再包一層 succ\n\ndef addZeroR (n : Nat) : add n zero ≡ n := match n with\n  | zero => refl\n  | succ k => cong succ (addZeroR k)\n\n-- cong succ 的意思：\n-- 如果 add k zero ≡ k\n-- 那 succ (add k zero) ≡ succ k\n\n-- 按 Check —— 你的第一個「真正的」數學證明！\ndef main : IO Unit := putNat (succ zero)",
     "hint": "Check 通過了！你剛剛證明了「任何數加 0 等於自己」——這是一個對無窮多個數字都成立的定理，不只是 1+0=1 或 2+0=2。",
-    "comparison": null
+    "comparison": null,
+    "section": "Part 6：你的第一個證明"
   },
   {
     "id": "a20",
@@ -177,6 +196,7 @@
     "description": "恭喜你完成了！讓我們回顧你學到的一切：\n\n**工具篇**\n- `--` 寫筆記，電腦忽略\n- `def` 取名字、做機器\n- `data` 發明新種類\n- `match` 打開看裡面\n- `:` 表示種類，`:=` 給出內容\n\n**觀念篇**\n- 每個東西都有種類，電腦會檢查\n- 機器接收東西，吐出結果\n- 機器可以用自己的名字（自己叫自己）\n- Nat 和 Bool 不是魔法，是有人用 `data` 定義的\n\n**證明篇**\n- `≡` 問「一樣嗎？」\n- `refl` 回答「算一算就知道」\n- 算不出來的時候，用 `match` 分情況討論\n- `cong` 在等式兩邊套機器\n- Check 通過 = 數學定理成立\n\n**最重要的一件事**：在 Cella 裡，寫程式和證明數學是同一件事。",
     "code": "-- 最後一個小程式：把所有學過的東西用上\n\n-- 發明種類（第 11 關）\ndata Color = red | green | blue\n\n-- 取名字（第 3 關）\ndef one : Nat := succ zero\ndef two : Nat := succ (succ zero)\n\n-- 做機器（第 7 關）\ndef double (n : Nat) : Nat := add n n\n\n-- 打開看裡面（第 9 關）\ndef isRed (c : Color) : Bool := match c with\n  | red => true\n  | green => false\n  | blue => false\n\n-- 問問題 + 回答（第 15 關）\ndef proof : add one one ≡ two := refl\n\n-- 不用 refl 的證明（第 19 關）\ndef addZeroR (n : Nat) : add n zero ≡ n := match n with\n  | zero => refl\n  | succ k => cong succ (addZeroR k)\n\n-- 你的旅程才剛開始！\ndef main : IO Unit := putNat (double two)",
     "hint": "按 Run 看到 4（double two = 2 + 2）。按 Check 確認所有證明都正確。你已經會用 Cella 寫程式和證明數學了！",
-    "comparison": null
+    "comparison": null,
+    "section": "Part 6：你的第一個證明"
   }
 ]

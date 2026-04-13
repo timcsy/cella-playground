@@ -10,7 +10,8 @@
       "lean4": "ua 是 axiom（Quot.mk 實作），transport 後 stuck。需要 simp [Equiv.ua_apply] 手動展開。",
       "agda": "Cubical Agda 同樣基於 Glue，transport (ua e) x = e .fst x 是 refl。與 Cella 同級。",
       "cella": "transport (ua e) x ≡ fst e x := refl。Glue type transport 在 NbE kernel 中直接歸約。"
-    }
+    },
+    "section": "Part 1：衝擊 + 語法"
   },
   {
     "id": "c1",
@@ -23,7 +24,8 @@
       "lean4": "語法最接近 Cella。主要差異：inductive vs data 語法、= vs ≡ 語義、no interval type。",
       "agda": "Cubical Agda 的 PathP 語義相同，但語法差異大（方程式 vs match、mixfix vs fixity notation）。",
       "cella": "混合 Lean4 語法 + CCHM cubical 語義。Sigma 用 (x : A) × B x，路徑用 ≡ (I → A)。"
-    }
+    },
+    "section": "Part 1：衝擊 + 語法"
   },
   {
     "id": "c2",
@@ -36,7 +38,8 @@
       "lean4": "Mathlib: 120K+ 定義，極度成熟。但 ua 是 axiom，HIT 不支援。",
       "agda": "cubical-agda library: 完整 CCHM + HITs。規模中等，無 tactic。",
       "cella": "837 定義，成長中。優勢：ua 能算 + HIT + 28 tactics + notation/macro + class/instance 全在一個系統中。"
-    }
+    },
+    "section": "Part 1：衝擊 + 語法"
   },
   {
     "id": "c3",
@@ -49,7 +52,8 @@
       "lean4": "無 interval。eq 是 inductive，只有 J（Eq.rec）。sym/cong 都是 match refl 的 elimination。funExt 是 axiom。",
       "agda": "Cubical Agda 有 I, i0, i1, ~_, _∧_, _∨_。語義完全相同，語法不同（~ vs 1-，∧ vs min）。",
       "cella": "I 是 primitive，fun i => ... 構造路徑，1-i / min / max 是 De Morgan 代數。sym/cong/funExt 全部是構造。"
-    }
+    },
+    "section": "Part 2：Cubical 核心"
   },
   {
     "id": "c4",
@@ -62,7 +66,8 @@
       "lean4": "transport (ua e) x = STUCK。需要 simp [Equiv.ua_apply] 或 rw 手動處理。下游證明被 stuck term 污染。",
       "agda": "transport (ua e) x = e .fst x。refl 證明。與 Cella 同級。",
       "cella": "transport (ua e) x = fst e x。refl 證明。Glue type transport 在 NbE 中直接歸約。"
-    }
+    },
+    "section": "Part 2：Cubical 核心"
   },
   {
     "id": "c5",
@@ -75,7 +80,8 @@
       "lean4": "無 Glue type。ua 是 axiom (Quot.mk 實作)。kernel 層級不支援。",
       "agda": "Cubical Agda 有 Glue/glue/unglue。語義相同，語法不同。",
       "cella": "Glue type 是 kernel primitive。ua e = Glue path。transport/hcomp 有完整歸約規則。"
-    }
+    },
+    "section": "Part 2：Cubical 核心"
   },
   {
     "id": "c6",
@@ -88,7 +94,8 @@
       "lean4": "無 hcomp。路徑合成靠 match refl + 歸納原理。無法構造正方形/cube 填充。",
       "agda": "Cubical Agda 有 hcomp，語法不同：hcomp (λ where (i = i0) → ...) base。語義相同。",
       "cella": "hcomp A [i=0 => a | i=1 => q] base。直觀的 system 語法。Kan filling 在 NbE 中有完整歸約。"
-    }
+    },
+    "section": "Part 2：Cubical 核心"
   },
   {
     "id": "c7",
@@ -101,7 +108,8 @@
       "lean4": "不支援 HITs。Quotient 是 kernel 內建的特例，不是通用機制。無法定義 S1、Susp、Pushout。",
       "agda": "Cubical Agda 支援 HITs，語法不同（data S¹ : Set where base : S¹; loop : base ≡ base）。語義相同。",
       "cella": "data S1 = base | loop : base ≡ base。path constructors 在 data 宣告中直接寫。支援 n-cell（S2 的 surf : refl ≡ refl）。"
-    }
+    },
+    "section": "Part 2：Cubical 核心"
   },
   {
     "id": "c8",
@@ -114,7 +122,8 @@
       "lean4": "simp 有龐大的 @[simp] lemma database，自動化極強。tactic 框架成熟（MonadTactic、macro、custom tactic）。",
       "agda": "無 tactic 系統。用 reflection-based automation（Agda 的 macro system）或直接寫 proof term。",
       "cella": "28 tactics。simp 基於 NbE 歸約（計算導向）而非 lemma database。覆蓋面廣但自動化深度不及 Lean4。"
-    }
+    },
+    "section": "Part 3：生態系"
   },
   {
     "id": "c9",
@@ -127,7 +136,8 @@
       "lean4": "成熟 type class + instance search。infixl:65 語法。macro/elab/syntax 完整 metaprogramming。",
       "agda": "用 record + instance arguments 模擬 type class。mixfix notation 極強大（_+_）。無 macro。",
       "cella": "class/instance/extends（Lean4 風格）+ infixl/notation/macro_rules/elab。instance 需命名，未來加自動 search。"
-    }
+    },
+    "section": "Part 3：生態系"
   },
   {
     "id": "c10",
@@ -140,7 +150,8 @@
       "lean4": "C++ kernel，速度極快。但無 cubical structure，不需要 Kan operations 的 NbE。lean4web 需 server。",
       "agda": "Haskell 實作，完整 cubical NbE。較慢，無官方 WASM/playground。記憶體用量大。",
       "cella": "Rust NbE + Rc + im::Vector + Susp memoization。WASM 純前端，無需 server。837 def stdlib 在瀏覽器中即時 type check。"
-    }
+    },
+    "section": "Part 3：生態系"
   },
   {
     "id": "c11",
@@ -153,6 +164,7 @@
       "lean4": "lean4web 需要 server-side Lean process。Mathlib 太大無法在前端跑。",
       "agda": "無官方 playground。Cubical Agda 需要本地安裝 GHC + Agda。",
       "cella": "純 WASM 前端。~1.4MB module。開啟網頁即用。完整 cubical 功能（ua 計算 + HITs + hcomp + 28 tactics）。"
-    }
+    },
+    "section": "Part 3：生態系"
   }
 ]

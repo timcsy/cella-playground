@@ -176,6 +176,8 @@ header h1 { font-size: 1.1rem; color: var(--blue); font-family: var(--font-sans)
 .level-item.active { background: var(--border); color: var(--blue); }
 .level-item.completed .level-status { color: var(--green); }
 .level-item .level-status { font-size: 0.7rem; width: 1.2rem; text-align: center; flex-shrink: 0; }
+.section-header { padding: 0.6rem 0.75rem 0.3rem; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: var(--dim); letter-spacing: 0.05em; border-top: 1px solid var(--border); margin-top: 0.3rem; }
+.section-header:first-child { border-top: none; margin-top: 0; }
 
 /* === Editor Panel === */
 .editor-panel {
