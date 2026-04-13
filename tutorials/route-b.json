@@ -1,114 +1,218 @@
 [
   {
-    "id": "b0",
-    "title": "B0：Curry-Howard 對應",
-    "concept": "Types = Propositions, Terms = Proofs, Functions = Implications",
-    "description": "Curry-Howard 對應是 dependent type theory 的基礎觀察：\n\n| 邏輯 | 型別論 |\n|------|--------|\n| 命題 | 型別 |\n| 證明 | 項（term） |\n| 蘊含 A → B | 函數型別 A -> B |\n| 合取 A ∧ B | 積型別 A × B |\n| 全稱量化 ∀x.P(x) | 依賴函數 (x : A) -> P x |\n\n這不是比喻——這是數學同構。寫出一個型別為 `A -> B` 的函數，就是**構造**了「A 蘊含 B」的證明。型別檢查通過 = 證明正確。\n\n在 Cella 裡，`def` 同時扮演定義和定理的角色。冒號後是命題（型別），`:=` 後是證明（項）。\n\n### 練習\n\n把 `{?}` 替換成正確的項。`identity` 要證明 A → A（恆等蘊含）。",
-    "code": "-- Curry-Howard 對應：命題 = 型別，證明 = 項\n\n-- Modus Ponens：A, A -> B ⊢ B\ndef modus_ponens (A : Type) (B : Type) (a : A) (f : A -> B) : B := f a\n\n-- 合取消去（積型別的投影就是 ∧-elimination）\ndef proj1 (A : Type) (B : Type) (p : (x : A) × B) : A := fst p\ndef proj2 (A : Type) (B : Type) (p : (x : A) × B) : B := snd p\n\n-- 合取引入\ndef intro_and (A : Type) (B : Type) (a : A) (b : B) : (x : A) × B := (a, b)\n\n-- 練習：證明 A → A（恆等函數 = 恆等蘊含）\ndef identity (A : Type) (a : A) : A := {?}\n\n-- 練習：證明 A → (B → A)（弱化律，weakening）\ndef weaken (A : Type) (B : Type) (a : A) (b : B) : A := {?}\n",
-    "hint": "identity：直接返回 a。weaken：忽略 b，返回 a。",
-    "comparison": {
-      "title": "Curry-Howard 在不同系統",
-      "others": "Lean4: `theorem mp (a : A) (f : A → B) : B := f a`\nAgda: `mp : A → (A → B) → B; mp a f = f a`\nCoq: `Theorem mp : A -> (A -> B) -> B. Proof. auto. Qed.`\n\n三者都有 Curry-Howard 對應，語法不同但數學結構相同。",
-      "cella": "`def modus_ponens (A : Type) (B : Type) (a : A) (f : A -> B) : B := f a`\n\n語法接近 Lean4。依賴積 `(x : A) × B` 對應邏輯合取。",
-      "diff": "Curry-Howard 是所有 dependent type theory 共享的。差異從 B2（路徑）開始。"
-    }
-  },
-  {
     "id": "b1",
-    "title": "B1：歸納型別",
-    "concept": "data Nat = zero | succ Nat — 歸納定義 + pattern matching = case analysis",
-    "description": "歸納型別（inductive type）是 dependent type theory 的核心構造。\n\n```\ndata Nat = zero | succ Nat\n```\n\n這是自然數的 Peano 定義：\n- `zero` 是基底構造子（base constructor）\n- `succ` 是遞迴構造子（recursive constructor）\n\n對歸納型別定義函數，用 **pattern matching**——這就是 case analysis：\n- 基底情況 `| zero => ...` 對應歸納的 base case\n- 遞迴情況 `| succ k => ...` 中的 `k` 就是歸納假設（induction hypothesis）\n\n數學歸納法的原理：\n> P(0) 且 (∀k. P(k) → P(k+1)) ⇒ ∀n. P(n)\n\n在 Cella 中，這就是一個遞迴函數：基底情況給出 P(0)，遞迴情況用 P(k) 構造 P(k+1)。\n\n### 練習\n\n觀察 `addZeroR` 如何用歸納法證明 `add n zero ≡ n`。",
-    "code": "-- stdlib 已預載 Nat, add, Bool 等\n-- 這裡展示歸納型別的結構\n\n-- 歸納定義自然數\n-- data Nat = zero | succ Nat\n\n-- 加法定義（對第一個引數歸納）\n-- def add (m : Nat) (n : Nat) : Nat := match m with\n--   | zero => n\n--   | succ k => succ (add k n)\n\n-- 歸納法證明：add n zero ≡ n\n-- 基底：add zero zero = zero ≡ zero ✓ (計算即得)\n-- 歸納：假設 add k zero ≡ k\n--       add (succ k) zero = succ (add k zero) ≡ succ k ✓\ndef myAddZeroR (n : Nat) : add n zero ≡ n := match n with\n  | zero => refl\n  | succ k => fun i => succ (myAddZeroR k i)\n\n-- 歸納法證明：add n (succ m) ≡ succ (add n m)\ndef myAddSuccR (n : Nat) (m : Nat) : add n (succ m) ≡ succ (add n m) := match n with\n  | zero => refl\n  | succ k => fun i => succ (myAddSuccR k m i)\n\n-- 驗證：計算型等式用 refl 即可\ndef test_add : add (succ (succ zero)) (succ zero) ≡ succ (succ (succ zero)) := refl\n",
-    "hint": "遞迴情況的 fun i => succ (myAddZeroR k i) 表示：對路徑的每個時刻 i，套一層 succ。因為 add (succ k) zero 展開為 succ (add k zero)。",
+    "title": "Level 1：你的第一眼",
+    "concept": "紙上證明 vs Cella 證明——逐符號對照",
+    "description": "在數學課上，你可能寫過這樣的證明：\n\n定理：∀n∈ℕ, n+0=n\n證明：對 n 做歸納。\n  基底：0+0=0 ✓\n  歸納步：假設 k+0=k，則 (k+1)+0 = (k+0)+1 = k+1 ✓  □\n\n現在看 Cella 版本：\n\ndef addZeroR (n : Nat) : add n zero ≡ n := match n with\n  | zero => refl\n  | succ k => fun i => succ (addZeroR k i)\n\n逐行對照：\n• ∀n∈ℕ           →  (n : Nat)\n• n+0=n          →  add n zero ≡ n\n• 對 n 做歸納    →  match n with\n• 基底 0+0=0     →  | zero => refl\n• 歸納步         →  | succ k => fun i => succ (addZeroR k i)\n\n「def」宣告一個定義（也是一個定理）。冒號後面是型別（也是命題）。`:=` 後面是值（也是證明）。\n\n按下檢查按鈕——如果通過，你的證明就是正確的。型別檢查 = 證明驗證。",
+    "code": "-- 紙上證明：∀n∈ℕ, n+0=n\n-- Cella 證明：\n\ndef myAddZeroR (n : Nat) : add n zero ≡ n := match n with\n  | zero => refl\n  | succ k => fun i => succ (myAddZeroR k i)\n\n-- 試試看：改成錯誤的證明，觀察型別檢查如何拒絕\n-- 例如把 succ (myAddZeroR k i) 改成 myAddZeroR k i\n\n-- 計算型等式不需要歸納，refl 就夠了\ndef test : add zero (succ zero) ≡ succ zero := refl\n",
+    "hint": "refl 代表「兩邊計算後相同」。add zero (succ zero) 展開後就是 succ zero，所以 refl 成立。但 add n zero 無法直接展開（n 是變數），需要歸納。",
     "comparison": {
-      "title": "歸納法在不同系統",
-      "others": "Lean4: `theorem addZeroR (n : Nat) : n + 0 = n := by induction n <;> simp [*]`\n\nLean4 用 tactic 隱藏了 proof term，你不知道證明的結構。",
-      "cella": "證明就是遞迴函數本身。`fun i => succ (myAddZeroR k i)` 是一條**可計算的路徑**——在 i = 0 時是 add (succ k) zero，在 i = 1 時是 succ k。",
-      "diff": "Lean4 的 tactic 隱藏 proof term。Cella 讓你看到證明的結構——每一步都是函數。"
+      "math": "∀n∈ℕ, n+0=n — 用歸納法證明，基底情況 + 歸納步",
+      "cella": "def addZeroR (n : Nat) : add n zero ≡ n := match n with ... — match 就是歸納，refl 就是「計算即得」"
     }
   },
   {
     "id": "b2",
-    "title": "B2：Path 與同倫",
-    "concept": "等式 a ≡ b 是一條路徑——從 a 到 b 的連續變形",
-    "description": "在 ZFC 集合論裡，`a = b` 是一個命題——要麼真，要麼假，所有證明都一樣。\n\n在 HoTT（同倫型別論 / Homotopy Type Theory）裡，`a ≡ b` 是一條**路徑**（path）：\n\n- 路徑用 `fun i => ...` 表達，其中 `i : I` 是區間維度\n- `i = 0` 時是 `a`，`i = 1` 時是 `b`\n- **不同的路徑 = 不同的證明 = 不同的「等法」**\n\n最簡單的路徑是 `refl : a ≡ a`，定義為 `fun i => a`（原地不動）。\n\n路徑的基本操作（stdlib 已提供）：\n- `sym : a ≡ b → b ≡ a`（路徑反轉：`fun i => p (1 - i)`）\n- `cong : (f : A -> B) → a ≡ b → f a ≡ f b`（函數保持路徑：`fun i => f (p i)`）\n- `trans : a ≡ b → b ≡ c → a ≡ c`（路徑串接，用 hcomp 構造）\n\n### 練習\n\n用路徑操作組合證明。",
-    "code": "-- stdlib 已預載 refl, sym, cong, trans\n\n-- refl：a ≡ a（原地不動的路徑）\ndef zero_eq_zero : zero ≡ zero := refl\n\n-- 用 fun i => 明確寫出路徑\ndef zero_eq_zero_explicit : zero ≡ zero := fun i => zero\n\n-- sym：如果 p : a ≡ b，那 sym p : b ≡ a\ndef sym_example : succ zero ≡ succ zero := sym refl\n\n-- cong：函數保持路徑\n-- 如果 p : a ≡ b，那 cong f p : f a ≡ f b\ndef succ_preserves (n : Nat) (m : Nat) (p : n ≡ m) : succ n ≡ succ m :=\n  cong succ p\n\n-- trans：路徑串接（遞移性）\n-- 如果 p : a ≡ b 且 q : b ≡ c，那 trans p q : a ≡ c\ndef add_zero_comm : add zero (succ zero) ≡ add (succ zero) zero :=\n  sym (addZeroR (succ zero))\n\n-- 練習：證明 not (not true) ≡ true\ndef not_not_true : not (not true) ≡ true := refl\n\n-- 練習：證明 not 是 involution\ndef not_invol (b : Bool) : not (not b) ≡ b := match b with\n  | true => refl\n  | false => refl\n",
-    "hint": "not (not true) 計算為 true，所以 refl 就足夠了。not_invol 需要對 b 做 pattern matching，兩個分支都是計算型等式。",
+    "title": "Level 2：命題和種類",
+    "concept": "命題 = 型別，真 = 有居民，假 = 空型別",
+    "description": "在邏輯裡，命題 P 要麼真，要麼假。\n在 Cella 裡，命題 P 是一個型別（Type）：\n\n• P 為真  ↔  P 有一個值（居民，inhabitant）\n• P 為假  ↔  P 是空型別（沒有值）\n\n符號解讀：\n• Type    — 「種類」，所有型別的型別（類似數學中的 Universe）\n• def     — 定義一個名字\n• :       — 「的型別是」（數學裡的 ∈）\n• :=      — 「定義為」（數學裡的 ≝）\n\n例如：\n  def myTrue : Unit := unit\n\n讀作：「myTrue 是 Unit 型別的一個值，定義為 unit。」\nUnit 只有一個值 unit，所以 Unit 恆真。\n\n空型別（Empty / ⊥）沒有構造子，無法構造值，所以代表「假」。\n從 Empty 可以證明任何事（爆炸原理 / ex falso）：\n  如果你有一個 Empty 的值（不可能！），你可以推出任何結論。",
+    "code": "-- 命題 = 型別\n\n-- Unit 恆真：有且僅有一個值 unit\ndef trivially_true : Unit := unit\n\n-- Nat 也有值，所以「存在自然數」為真\ndef exists_a_nat : Nat := zero\n\n-- 函數型別也是型別\ndef identity_exists : Nat -> Nat := fun n => n\n\n-- 型別本身的型別是 Type\ndef NatIsAType : Type := Nat\ndef BoolIsAType : Type := Bool\n\n-- 依賴型別：型別可以依賴於值\n-- 「n 等於 n」對每個 n 都是一個型別\ndef selfEq (n : Nat) : Type := n ≡ n\n\n-- 這個型別有居民（refl），所以 n ≡ n 為真\ndef selfEqProof (n : Nat) : n ≡ n := refl\n",
+    "hint": "Type 是「型別的型別」。def x : T := v 讀作「x 屬於 T，定義為 v」。冒號對應 ∈，Type 對應宇宙集合 U。",
     "comparison": {
-      "title": "等式的本質差異",
-      "others": "ZFC: `a = b` 是原子命題，只有真/假\nLean4: `a = b` 是 Prop，proof irrelevant（所有證明等價）\nCoq: `a = b` 只有 `eq_refl` 一個構造子",
-      "cella": "`a ≡ b` 是路徑空間。`fun i => ...` 是實際的路徑。\n不同路徑 = 不同證明 = 不同的等法。\n路徑之間還可以有路徑（higher paths）。",
-      "diff": "Lean4/Coq 的等式是 proof irrelevant。Cella 的等式有同倫結構——等式之間還可以有等式，這是高維數學的基礎。"
+      "math": "命題 P 為真 ↔ P 有證明；P 為假 ↔ P 無證明。宇宙 U 包含所有集合。",
+      "cella": "命題 P 為真 ↔ 型別 P 有居民；P 為假 ↔ P 是空型別。Type 包含所有型別。def x : T := v 定義一個居民。"
     }
   },
   {
     "id": "b3",
-    "title": "B3：Transport",
-    "concept": "如果 A ≡ B（型別之間的路徑），transport 把 A 的值搬到 B",
-    "description": "Transport 是 cubical type theory 的核心操作：\n\n```\ntransport : (P : I -> Type) -> P 0 -> P 1\n```\n\n給定一族型別 `P : I -> Type`（一條型別路徑），transport 把 `P 0` 的值搬到 `P 1`。\n\n**關鍵**：transport 是**可計算的**——它不只是說「存在一個值」，它**真的把值算出來**。\n\n常見用法（subst）：如果 `p : a ≡ b` 且 `P a` 成立，那麼 `P b` 也成立。\n\n```\nsubst P p pa = transport (fun i => P (p i)) pa\n```\n\n基本性質：\n- `transport refl x ≡ x`（沿恆等路徑搬運 = 不動）\n- `transport (ua e) x ≡ fst e x`（沿等價路徑搬運 = 套用等價函數，B4 會看到）\n\n### 練習\n\n驗證 transport 的基本性質。",
-    "code": "-- stdlib 已預載 transport, transportRefl\n\n-- transport 沿恆等路徑不動\ndef myTransportRefl (a : Nat) : transport (fun i => Nat) a ≡ a := refl\n\n-- subst 是 transport 的特例：\n-- 如果 p : a ≡ b，那麼 P(a) → P(b)\ndef mySubst {A : Type} (P : A -> Type) {a : A} {b : A}\n  (p : a ≡ b) (pa : P a) : P b :=\n  transport (fun i => P (p i)) pa\n\n-- 用 cong 證明：如果 n ≡ m，那 succ n ≡ succ m\n-- 這其實就是 transport 的特例（但 cong 更直接）\ndef succ_cong {n : Nat} {m : Nat} (p : n ≡ m) : succ n ≡ succ m :=\n  fun i => succ (p i)\n\n-- transport 的組合性：兩次 transport 等於沿串接路徑 transport\n-- 先看簡單例子\ndef transport_id_nat : transport (fun i => Nat) (succ zero) ≡ succ zero := refl\n\n-- 練習：理解 transport 的計算性\n-- transport (fun i => Nat) zero 計算為 zero\ndef test_transport : transport (fun i => Nat) zero ≡ zero := refl\n",
-    "hint": "transport (fun i => Nat) x 沿著「常數型別家族」搬運，所以什麼都不變，refl 即可。",
+    "title": "Level 3：構造 vs 假設",
+    "concept": "經典邏輯假設，構造邏輯建造——Cella 是構造的",
+    "description": "經典數學常用反證法：\n  假設 ¬P，推出矛盾 ⊥，所以 P 成立。\n\n但這只告訴你 P 為真——不告訴你 P 的「見證者」（witness）是什麼。\n\n構造數學（也是 Cella 的邏輯）要求：\n  要證明 ∃x∈A, P(x)，你必須**給出具體的 x** 和 P(x) 的證明。\n  要證明 A ∨ B，你必須**指出是 A 還是 B**，並給出該側的證明。\n\n例如：\n  經典：「存在無理數 a, b 使得 aᵇ 是有理數。」\n  （取 a=√2, b=√2，如果 √2^√2 是有理的就完成；否則取 a=√2^√2, b=√2。但你不知道是哪個！）\n\n  構造：你必須明確指出 a 和 b 分別是什麼，並證明 aᵇ 是有理數。\n\n在 Cella 裡，證明就是程式。「存在 x 使得 P(x)」= 構造一個 pair (x, proof)。",
+    "code": "-- 構造主義：證明 = 給出見證者\n\n-- 存在一個偶數：給出 (2, refl)\ndef exists_even : (n : Nat) × (add n n ≡ add n n) := (zero, refl)\n\n-- Modus Ponens：如果 A 且 A → B，那麼 B\n-- 構造版本：實際計算出 B 的值\ndef modus_ponens (A : Type) (B : Type) (a : A) (f : A -> B) : B := f a\n\n-- 雙重否定消除在構造邏輯中不成立！\n-- 你不能寫 def dne (A : Type) : ((A -> Empty) -> Empty) -> A := ...\n-- 因為從「¬¬A」你無法構造出一個具體的 A 的值\n\n-- 但你可以證明 A → ¬¬A（這是構造有效的）\ndef doubleNegIntro (A : Type) (a : A) : (A -> Empty) -> Empty :=\n  fun f => f a\n",
+    "hint": "f a 就是 modus ponens 的計算內容：把 a 餵給 f，得到 B 的值。構造邏輯要求每一步都有具體的計算。",
     "comparison": {
-      "title": "Transport 的計算性",
-      "others": "Lean4: `Eq.subst h x` 是公理化操作，不歸約\nCoq: `eq_rect` 同樣公理化\nAgda (cubical): `transport` 可計算 ✓",
-      "cella": "`transport (fun i => P (p i)) pa` 實際計算出結果值。\n`transport (fun i => Nat) x` 歸約為 `x`。",
-      "diff": "Lean4/Coq 的 subst 是「保證結果存在」。Cella 的 transport 是「把結果算給你」。Cubical Agda 同樣可以計算。"
+      "math": "經典邏輯：反證法（假設 ¬P 推矛盾）。∃x.P(x) 只需知道「存在」，不需指出 x。",
+      "cella": "構造邏輯：必須給出見證者。∃x.P(x) = (x : A) × P x，你必須提供 x 和 P x 的證明。程式 = 證明。"
     }
   },
   {
     "id": "b4",
-    "title": "B4：Univalence",
-    "concept": "ua : Equiv A B → A ≡ B — 等價的型別就是相等的型別，而且 transport(ua(e)) x = fst e x 可計算",
-    "description": "**Univalence** 是 HoTT 的核心公理（在 cubical type theory 中是**定理**）：\n\n> 如果 A ≃ B（A 和 B 等價），那麼 A ≡ B。\n\n```\nua : Equiv A B → A ≡ B\n```\n\n等價（`Equiv A B`）= 存在一對互逆的函數，使得往返都是恆等。\n\n**Cella 的殺手功能**：`transport (ua e) x` 歸約為 `fst e x`。\n\n在 Lean4 中：\n```\ntransport (ua notEquiv) true\n-- stuck. 不歸約。\n```\n\n在 Cella 中：\n```\ntransport (ua notEquiv) true\n-- = not true = false  ✓ 可計算！\n```\n\n差別在於 Lean4 的 `ua` 是公理（無計算內容），而 Cella 基於 **Glue types** 提供完整的計算規則。\n\n**為什麼重要？** 可計算的 ua 讓「等價即相等」不只是理論聲明，而是**可執行的程式碼轉換**。\n\n### 練習\n\n驗證 `notEquiv` 和 `ua` 的計算性。",
-    "code": "-- stdlib 已預載 ua, idEquiv, Equiv, notEquiv, notPathBool 等\n\n-- idEquiv：每個型別等價於自己\n-- ua (idEquiv Nat) : Nat ≡ Nat\ndef id_path : Nat ≡ Nat := ua (idEquiv Nat)\n\n-- transport along idEquiv 什麼都不變\ndef test_id_transport : transport (ua (idEquiv Nat)) zero ≡ zero := refl\n\n-- notEquiv : Equiv Bool Bool（not 是 Bool 的自等價）\n-- notPathBool : Bool ≡ Bool（ua notEquiv 得到的路徑）\n\n-- 核心計算：transport (ua notEquiv) 就是 not\ndef ua_computes_true : transport (ua notEquiv) true ≡ false := refl\ndef ua_computes_false : transport (ua notEquiv) false ≡ true := refl\n\n-- 雙重 transport = 恆等（因為 not . not = id）\ndef roundtrip : transport (ua notEquiv) (transport (ua notEquiv) true) ≡ true := refl\n\n-- transportUa 定理（stdlib 已有）：\n-- transport (ua e) x ≡ fst e x\n-- 這是 refl，因為 Glue types 直接計算！\ndef myTransportUa (e : Equiv Nat Nat) (x : Nat) :\n  transport (ua e) x ≡ fst e x := refl\n",
-    "hint": "ua notEquiv 給出 Bool ≡ Bool 的非平凡路徑。transport 沿著這條路徑搬運值，相當於套用 not。這在 Lean4 中不會歸約！",
+    "title": "Level 4：蘊含就是函數",
+    "concept": "P → Q 既是蘊含，也是函數型別",
+    "description": "在邏輯中：P → Q 表示「P 蘊含 Q」。\n在 Cella 中：P -> Q 是「從 P 到 Q 的函數型別」。\n\n這不是比喻——這是 Curry-Howard 同構：\n\n| 邏輯           | Cella        |\n|----------------|-------------|\n| P → Q（蘊含）  | P -> Q（函數） |\n| P 的證明       | P 的值       |\n| Modus Ponens   | 函數應用 f a |\n| P ∧ Q（合取）  | (x : P) × Q |\n| ∀x∈A. P(x)    | (x : A) -> P x |\n\n函數的寫法：\n• fun x => body  — 匿名函數（λ-表達式），數學裡的 x ↦ body\n• f a            — 函數應用，數學裡的 f(a)\n\n大括號 { } 用於隱式參數（Cella 自動推斷的參數，Level 8 會詳細說明）。",
+    "code": "-- P → Q = 從 P 到 Q 的函數\n\n-- 蘊含的證明就是一個函數\ndef implication (P : Type) (Q : Type) (f : P -> Q) (p : P) : Q := f p\n\n-- 恆等蘊含 P → P：恆等函數\ndef identity (A : Type) (a : A) : A := a\n\n-- 蘊含的組合 = 函數的組合\n-- 如果 A → B 且 B → C，那 A → C\ndef compose (A : Type) (B : Type) (C : Type)\n  (f : A -> B) (g : B -> C) (a : A) : C := g (f a)\n\n-- 合取（P ∧ Q）= 積型別 (x : P) × Q\n-- 投影 = 消去合取\ndef proj1 (A : Type) (B : Type) (p : (x : A) × B) : A := fst p\ndef proj2 (A : Type) (B : Type) (p : (x : A) × B) : B := snd p\n\n-- 合取引入\ndef intro_and (A : Type) (B : Type) (a : A) (b : B) : (x : A) × B := (a, b)\n\n-- 練習：證明弱化律 A → (B → A)\n-- 讀作：如果 A 成立，那麼不管 B 是什麼，A 都成立\ndef weaken (A : Type) (B : Type) (a : A) (b : B) : A := {?}\n",
+    "hint": "weaken 要從 A 和 B 的值返回 A 的值——直接返回 a，忽略 b。弱化律的意思是「多餘的假設不影響結論」。",
     "comparison": {
-      "title": "Univalence 的計算性——Cella 的核心優勢",
-      "others": "Lean4: `ua` 是公理，`transport (ua e) x` **stuck 不歸約**\nCoq (HoTT library): `ua` 是公理，同樣 stuck\nAgda (cubical): `ua` 可計算 ✓",
-      "cella": "`transport (ua e) x` = `fst e x` ✓\nGlue types 提供完整的計算規則。`refl` 就能證明。",
-      "diff": "Lean4/Coq 的 ua 只是聲明「等價即相等」。Cella 和 Cubical Agda 的 ua 是「等價即相等，而且可以沿著等價搬運值」。"
+      "math": "P → Q 是蘊含，Modus Ponens 是推理規則：從 P 和 P → Q 推出 Q。",
+      "cella": "P -> Q 是函數型別，Modus Ponens 就是函數應用 f a。fun x => body 是 λ-表達式。蘊含和函數是同一個東西。"
     }
   },
   {
     "id": "b5",
-    "title": "B5：Homotopy Level",
-    "concept": "isContr, isProp, isSet — 型別有同倫層級，Nat 是 set，Unit 是 contractible",
-    "description": "在 HoTT 中，型別按其路徑結構分層：\n\n| h-level | 名稱 | 含義 |\n|---------|------|------|\n| -2 | isContr（可縮） | 只有一個元素（up to path） |\n| -1 | isProp（命題） | 任兩個元素都有路徑 |\n| 0 | isSet（集合） | 任兩條路徑都相等 |\n| 1 | isGroupoid | 路徑之間的路徑都相等 |\n\nStdlib 定義：\n```\nisContr A = (center : A) × ((x : A) -> center ≡ x)\nisProp A  = (x : A) -> (y : A) -> x ≡ y\nisSet A   = (x y : A) -> (p q : x ≡ y) -> p ≡ q\n```\n\n重要定理：\n- `isContr → isProp → isSet`（層級向上封閉）\n- `Unit` 是 contractible\n- `Nat` 是 set（任兩條 0 ≡ 0 的路徑都相等）\n- `Bool` 是 set\n- 但一般的 `Type` **不是** set（因為 ua 給出非平凡的自等價路徑）\n\n### 練習\n\n觀察 stdlib 的 h-level 證明。",
-    "code": "-- stdlib 已預載 isContr, isProp, isSet, isContrUnit, isPropToIsSet, isContrToIsProp\n\n-- Unit 是 contractible：只有一個元素 unit，所有值都等於 unit\n-- isContrUnit : isContr Unit\n-- = (unit, fun x => match x with | unit => refl)\n\n-- isContr → isProp（可縮型別是命題）\n-- isContrToIsProp : isContr A → isProp A\n\n-- isProp → isSet（命題是集合）\n-- isPropToIsSet : isProp A → isSet A\n\n-- 驗證 Unit 是 contractible\ndef unit_is_contr : isContr Unit := isContrUnit\n\n-- 從 isContrUnit 推導 Unit 是 isProp\ndef unit_is_prop : isProp Unit := isContrToIsProp isContrUnit\n\n-- 從 isProp 推導 Unit 是 isSet\ndef unit_is_set : isSet Unit := isPropToIsSet Unit (isContrToIsProp isContrUnit)\n\n-- isPropPi：如果 B x 是命題，那 (x : A) -> B x 也是命題\n-- isPropPi : ((x : A) -> isProp (B x)) -> isProp ((x : A) -> B x)\n\n-- Bool 的路徑：not (not b) ≡ b（計算型，refl）\ndef bool_invol (b : Bool) : not (not b) ≡ b := match b with\n  | true => refl\n  | false => refl\n",
-    "hint": "isContrUnit 的 contraction 是 fun x => match x with | unit => refl。因為 Unit 只有一個構造子，所有值都是 unit。",
+    "title": "Level 5：ℕ 的定義",
+    "concept": "Peano 公理 → data Nat = zero | succ Nat",
+    "description": "Peano 公理定義自然數 ℕ：\n  (1) 0 ∈ ℕ\n  (2) 如果 n ∈ ℕ，那 S(n) ∈ ℕ\n  (3) S 是單射\n  (4) 0 不在 S 的值域中\n  (5) 歸納原理\n\n在 Cella 中，這用一行歸納定義表達：\n\n  data Nat = zero | succ Nat\n\n符號解讀：\n• data     — 定義一個歸納型別（像定義一個新的數學結構）\n• Nat      — 型別名（自然數）\n• =        — 「由以下構造子組成」\n• zero     — 第一個構造子（對應 Peano 的 0）\n• |        — 「或者」（分隔構造子）\n• succ Nat — 第二個構造子，接收一個 Nat（對應 Peano 的後繼函數 S）\n\n所以 Nat 的值是：zero, succ zero, succ (succ zero), ...\n對應數學的：0, 1, 2, ...\n\n公理 (3)(4) 由歸納型別自動保證（不同構造子產生不同值）。\n公理 (5) 由 match 表達式提供。",
+    "code": "-- Peano 公理 = 歸納定義\n-- data Nat = zero | succ Nat\n\n-- 自然數的例子\ndef zero_ : Nat := zero\ndef one : Nat := succ zero\ndef two : Nat := succ (succ zero)\ndef three : Nat := succ (succ (succ zero))\n\n-- 類似地，Bool 也是歸納定義：\n-- data Bool = true | false\n\n-- data 還可以定義更複雜的結構\n-- data List A = nil | cons A (List A)\n-- 數學裡的序列 [a₁, a₂, ...] = cons a₁ (cons a₂ (... nil))\n\ndef myList : List Nat := cons zero (cons (succ zero) nil)\n\n-- Unit 只有一個構造子——恆真命題\n-- data Unit = unit\ndef trivial : Unit := unit\n",
+    "hint": "data 定義告訴你一個型別「所有可能的值」。Nat 的值只能是 zero 或 succ 某個 Nat——沒有其他可能。這就是歸納型別的封閉性。",
     "comparison": {
-      "title": "h-level 在不同系統",
-      "others": "Lean4: 有 `Subsingleton`（≈ isProp）和 `DecidableEq`，但沒有完整的 h-level 層級\nAgda (cubical): 完整的 h-level 層級 ✓\nCoq (HoTT): 完整的 h-level 層級 ✓",
-      "cella": "完整的 h-level 層級：isContr / isProp / isSet / isTrunc n。\nisTrunc n A 是遞迴定義，統一所有層級。",
-      "diff": "Lean4 的 Prop 宇宙隱式假設所有命題都 proof irrelevant。Cella 的 isProp 是一個可證明的性質——你需要**證明**一個型別是命題，而不是用特殊宇宙強制。"
+      "math": "Peano 公理：0 ∈ ℕ，n ∈ ℕ → S(n) ∈ ℕ，加上歸納原理。",
+      "cella": "data Nat = zero | succ Nat。data 定義歸納型別，zero 和 succ 是構造子，| 分隔不同情況。歸納原理由 match 提供。"
     }
   },
   {
     "id": "b6",
-    "title": "B6：用 Stdlib 寫證明",
-    "concept": "匯入並使用 stdlib 定理：addZeroR, addSuccR, appendAssoc",
-    "description": "Cella stdlib 已預載 837 個定義，包含大量已證明的定理。寫新證明時，你可以直接引用它們：\n\n**算術定理**：\n- `addZeroR : add m zero ≡ m`\n- `addSuccR : add m (succ n) ≡ succ (add m n)`\n- `addComm : add m n ≡ add n m`\n- `addAssoc : add m (add n o) ≡ add (add m n) o`\n\n**串列定理**：\n- `appendNil : append xs nil ≡ xs`\n- `appendAssoc : append (append xs ys) zs ≡ append xs (append ys zs)`\n\n**路徑組合子**：\n- `sym, cong, trans`（基本路徑操作）\n- `transportRefl : transport (fun i => A) a ≡ a`\n- `transportUa : transport (ua e) x ≡ fst e x`\n\n寫證明的模式：\n1. 計算型等式 → `refl`\n2. 對歸納型別 → pattern matching + 遞迴\n3. 需要串接多步 → `trans p q` 或直接構造路徑 `fun i => ...`\n4. 需要套函數 → `cong f p`\n\n### 練習\n\n用 stdlib 定理組合證明。",
-    "code": "-- 用 stdlib 定理組合新證明\n\n-- 加法交換律的直接應用\ndef add_1_2 : add (succ zero) (succ (succ zero)) ≡ succ (succ (succ zero)) := refl\n\n-- 用 addComm 證明 add 0 n ≡ add n 0\ndef add_comm_zero (n : Nat) : add zero n ≡ add n zero :=\n  sym (addZeroR n)\n\n-- 用 trans + cong 組合多步證明\n-- 目標：add (succ m) zero ≡ succ m\n-- 步驟：addZeroR (succ m) 直接給出\ndef add_succ_zero (m : Nat) : add (succ m) zero ≡ succ m :=\n  addZeroR (succ m)\n\n-- 串列結合律的例子\ndef list_assoc_example (xs : List Nat) (ys : List Nat) (zs : List Nat) :\n  append (append xs ys) zs ≡ append xs (append ys zs) :=\n  appendAssoc xs ys zs\n\n-- 用 cong 提升證明\n-- 如果 add m zero ≡ m，那 succ (add m zero) ≡ succ m\ndef lift_proof (m : Nat) : succ (add m zero) ≡ succ m :=\n  cong succ (addZeroR m)\n\n-- 用 trans 串接兩個已知結果\ndef chain_proof (m : Nat) (n : Nat) :\n  add m (add zero n) ≡ add m n :=\n  refl\n",
-    "hint": "add zero n 計算上就是 n，所以 add m (add zero n) 計算上就是 add m n，refl 足矣。善用計算型等式可以避免不必要的 trans。",
+    "title": "Level 6：歸納法 = 遞迴",
+    "concept": "數學歸納法的原理和遞迴函數定義是同一回事",
+    "description": "數學歸納法：\n  要證明 ∀n∈ℕ. P(n)，需要：\n  (基底) 證明 P(0)\n  (歸納步) 假設 P(k) 成立，證明 P(k+1)\n\nCella 中的遞迴函數：\n  def f (n : Nat) : P n := match n with\n    | zero => ...     -- 基底：P(0) 的證明\n    | succ k => ...   -- 歸納步：用 f k（= P(k) 的證明）構造 P(k+1)\n\nmatch 是 pattern matching（模式匹配）——對值做「分情況討論」：\n• match n with    — 對 n 的值分情況\n• | zero => e₁    — 如果 n = 0，結果是 e₁\n• | succ k => e₂  — 如果 n = k+1，結果是 e₂（k 綁定為前驅）\n\n加法的定義就是一個遞迴函數（對第一個引數歸納）：\n\ndef add (m : Nat) (n : Nat) : Nat := match m with\n  | zero => n                    -- 0 + n = n\n  | succ k => succ (add k n)     -- (k+1) + n = (k + n) + 1",
+    "code": "-- 加法定義（已在 stdlib 中，這裡用 my 前綴重新定義）\ndef myAdd (m : Nat) (n : Nat) : Nat := match m with\n  | zero => n\n  | succ k => succ (myAdd k n)\n\n-- 驗證計算：2 + 1 = 3\ndef test_add : myAdd (succ (succ zero)) (succ zero) ≡ succ (succ (succ zero)) := refl\n\n-- 用歸納法證明：myAdd n zero ≡ n\n-- 紙上版本：\n--   基底：myAdd 0 0 = 0 ≡ 0 ✓\n--   歸納步：假設 myAdd k 0 ≡ k\n--           myAdd (k+1) 0 = succ (myAdd k 0) ≡ succ k ✓\ndef myAddZeroR (n : Nat) : myAdd n zero ≡ n := match n with\n  | zero => refl\n  | succ k => fun i => succ (myAddZeroR k i)\n\n-- 乘法定義（對第一個引數歸納）\n-- 0 × n = 0，(k+1) × n = n + (k × n)\ndef myMul (m : Nat) (n : Nat) : Nat := match m with\n  | zero => zero\n  | succ k => myAdd n (myMul k n)\n",
+    "hint": "在 succ k 分支裡，myAddZeroR k 就是歸納假設 IH : myAdd k zero ≡ k。fun i => succ (myAddZeroR k i) 表示「對路徑的每一點套一層 succ」。",
     "comparison": {
-      "title": "證明風格比較",
-      "others": "Lean4: `simp [add_comm, add_assoc]` 一行搞定大多數算術\nAgda: 手寫 proof term 或 auto solver\nCoq: `omega` / `ring` / `lia` 等自動化 tactic",
-      "cella": "計算型等式用 refl，結構歸納用 pattern matching + 遞迴，組合用 trans/cong/sym。直接看到證明結構。",
-      "diff": "Lean4/Coq 偏好 tactic 自動化。Cella 的 proof term 直接暴露數學結構——每一步都是函數，每條路徑都可計算。"
+      "math": "歸納法：證明 P(0)，再假設 P(k) 證明 P(k+1)。",
+      "cella": "match n with | zero => ... | succ k => ... 就是歸納法。zero 分支 = 基底，succ k 分支 = 歸納步，遞迴呼叫 = 使用歸納假設。"
     }
   },
   {
     "id": "b7",
-    "title": "B7：概念先於表達",
-    "concept": "概念是本體，程式碼是投影。Transport 證明結構等價，ua 讓等價成為相等。",
-    "description": "把前面學到的全部串起來：\n\n1. **Curry-Howard**：型別 = 命題，項 = 證明。程式和數學是同一件事。\n2. **歸納型別**：數學結構（自然數、串列、樹）都是歸納定義，歸納法就是遞迴函數。\n3. **Path**：等式是路徑，不是原子命題。等式有結構，結構本身可以被推理。\n4. **Transport**：如果兩個型別之間有路徑，值可以沿路徑搬運——而且可計算。\n5. **Univalence**：等價的結構就是相等的結構。ua + transport = 自動轉換。\n6. **h-level**：型別按同倫結構分層。集合、命題、可縮型別各有特性。\n\n**結論：概念獨立於表達。**\n\n陣列和鏈結串列是「序列」概念的不同投影。二進位和一進位是「自然數」概念的不同投影。如果兩個表達是等價的，ua + transport 保證它們可以**自動互轉**：\n\n- 不需要手動寫 adapter\n- 不需要 migration\n- **概念不變，表達自由切換**\n\n這就是 Cella 的願景：**程式碼只是概念的投影，概念才是本體。**\n\n### 最後練習\n\n寫一個完整的小證明，綜合運用所學。",
-    "code": "-- 綜合練習：用 stdlib 定理組合一個完整的證明鏈\n\n-- 目標：add (add m zero) zero ≡ m\n-- 策略：兩次使用 addZeroR\ndef double_zero_elim (m : Nat) : add (add m zero) zero ≡ m :=\n  trans (addZeroR (add m zero)) (addZeroR m)\n\n-- cong 保持路徑 = 函數保持結構等價\n-- 概念：如果 n ≡ m，那麼「n 的後繼」≡「m 的後繼」\ndef succ_preserves_eq {n : Nat} {m : Nat} (p : n ≡ m) : succ n ≡ succ m :=\n  cong succ p\n\n-- 用 sym 翻轉方向\ndef add_zero_sym (m : Nat) : m ≡ add m zero :=\n  sym (addZeroR m)\n\n-- transport 搬運值：如果 A ≡ B，那 A 的值可以搬到 B\n-- 這是概念等價的計算實現\ndef transport_example : transport (ua (idEquiv Nat)) (succ zero) ≡ succ zero := refl\n\n-- 恭喜完成路線 B！\n-- 你現在知道：\n-- ✓ 命題 = 型別，證明 = 項（Curry-Howard）\n-- ✓ 歸納型別 + pattern matching = 數學歸納法\n-- ✓ 等式是路徑，有同倫結構\n-- ✓ Transport 沿路徑搬值，可計算\n-- ✓ Univalence：等價 = 相等，可計算\n-- ✓ h-level 分層：isContr / isProp / isSet\n-- ✓ 概念先於表達，程式碼只是投影\n",
+    "title": "Level 7：標準庫怎麼定義的",
+    "concept": "閱讀 Cella stdlib 中 Nat、add、mul 的實際定義",
+    "description": "Cella 的標準庫（stdlib）預載了數百個定義。以下是你會常用的核心定義（原始碼節錄）：\n\n自然數與運算：\n  data Nat = zero | succ Nat\n  def add (m : Nat) (n : Nat) : Nat := match m with\n    | zero => n | succ k => succ (add k n)\n  def mul (m : Nat) (n : Nat) : Nat := match m with\n    | zero => zero | succ k => add n (mul k n)\n\n布林值：\n  data Bool = true | false\n  def not (a : Bool) : Bool := match a with\n    | true => false | false => true\n\n串列（List）：\n  data List A = nil | cons A (List A)\n  def append (xs : List A) (ys : List A) : List A := match xs with\n    | nil => ys | cons x rest => cons x (append rest ys)\n\n已證定理：\n  addZeroR : add m zero ≡ m\n  addSuccR : add m (succ n) ≡ succ (add m n)\n  addComm  : add m n ≡ add n m\n  addAssoc : add m (add n o) ≡ add (add m n) o\n\n你可以直接引用這些定理來組合新的證明。",
+    "code": "-- 直接使用 stdlib 定理\n\n-- addZeroR：加零等於自己\ndef use_addZeroR : add (succ (succ zero)) zero ≡ succ (succ zero) :=\n  addZeroR (succ (succ zero))\n\n-- 但其實這個是計算型等式，refl 也行\ndef use_refl_instead : add (succ (succ zero)) zero ≡ succ (succ zero) := refl\n\n-- addComm：加法交換律\ndef use_addComm : add (succ zero) (succ (succ zero)) ≡ add (succ (succ zero)) (succ zero) :=\n  addComm (succ zero) (succ (succ zero))\n\n-- 用 cong 提升：如果 add m zero ≡ m，那 succ (add m zero) ≡ succ m\ndef lift (m : Nat) : succ (add m zero) ≡ succ m :=\n  cong succ (addZeroR m)\n\n-- 用 trans 串接兩步\ndef chain (m : Nat) : add (add m zero) zero ≡ m :=\n  trans (addZeroR (add m zero)) (addZeroR m)\n\n-- 串列的結合律\ndef list_assoc (xs : List Nat) (ys : List Nat) (zs : List Nat) :\n  append (append xs ys) zs ≡ append xs (append ys zs) :=\n  appendAssoc xs ys zs\n",
+    "hint": "stdlib 定理是已經證好的引理——你可以像數學論文裡引用已知結果一樣直接使用。善用計算型等式（refl）可以省掉不必要的引理呼叫。",
+    "comparison": {
+      "math": "數學論文引用已知定理：「由交換律知 m+n=n+m。」",
+      "cella": "直接引用 stdlib：addComm m n : add m n ≡ add n m。用 trans 串接 = 論文裡的「由 ... 和 ... 知」。用 cong f p = 「對兩邊套 f」。"
+    }
+  },
+  {
+    "id": "b8",
+    "title": "Level 8：全稱量詞 = 依賴函數",
+    "concept": "∀x∈A. P(x) = (x : A) → P x——依賴型別",
+    "description": "數學中的全稱量化：\n  ∀x∈A. P(x) — 對所有 x∈A，P(x) 成立\n\nCella 中的依賴函數型別：\n  (x : A) -> P x — 接收一個 x : A，返回 P x 的值\n\n這兩個是同一個東西！\n\n普通函數型別 A -> B 是特例：P 不依賴於 x。\n依賴函數型別 (x : A) -> P x 是一般情況：返回型別 P x 隨輸入 x 變化。\n\n例如：\n  ∀n∈ℕ. n+0=n\n  ↕\n  (n : Nat) -> add n zero ≡ n\n\n大括號 {x : A} 表示隱式參數——Cella 會自動推斷 x 的值，你不需要顯式傳入。\n\n例如 sym 的型別是：\n  sym : {A : Type} -> {a : A} -> {b : A} -> a ≡ b -> b ≡ a\n\n你只需要寫 sym p，Cella 會自動推斷 A, a, b。",
+    "code": "-- ∀n∈ℕ. n+0=n  =  (n : Nat) -> add n zero ≡ n\n\n-- 全稱量化的證明 = 依賴函數\ndef allNatAddZero : (n : Nat) -> add n zero ≡ n :=\n  fun n => addZeroR n\n\n-- 也可以直接用 def 的參數語法（等價寫法）\ndef allNatAddZero2 (n : Nat) : add n zero ≡ n := addZeroR n\n\n-- 隱式參數：{} 中的參數由 Cella 自動推斷\n-- sym 的完整型別是 {A : Type} -> {a b : A} -> a ≡ b -> b ≡ a\n-- 但你只需要寫：\ndef flip_proof (n : Nat) : n ≡ add n zero := sym (addZeroR n)\n\n-- 依賴型別的力量：返回型別隨輸入變化\n-- P : Nat -> Type 是一族型別\ndef depExample (P : Nat -> Type) (pz : P zero) (n : Nat) : Type := P n\n\n-- funExt：如果 ∀x. f(x) = g(x)，那 f = g（函數外延性）\n-- funExt : ((x : A) -> f x ≡ g x) -> f ≡ g\ndef funext_demo (f : Nat -> Nat) (g : Nat -> Nat)\n  (h : (x : Nat) -> f x ≡ g x) : f ≡ g := funExt h\n",
+    "hint": "def f (n : Nat) : P n := ... 和 def f : (n : Nat) -> P n := fun n => ... 是完全等價的寫法。前者更像數學中的 ∀n. P(n) 記法。",
+    "comparison": {
+      "math": "∀x∈A. P(x)——全稱量化。證明方法：「設 x∈A 為任意元素，則...」",
+      "cella": "(x : A) -> P x——依賴函數型別。構造方法：fun x => ...（對任意 x 給出 P x 的值）。{x : A} 是隱式參數，Cella 自動推斷。"
+    }
+  },
+  {
+    "id": "b9",
+    "title": "Level 9：等式是路徑",
+    "concept": "a ≡ b 是從 a 到 b 的路徑——用區間 I 和 fun i => ... 表達",
+    "description": "在集合論中，a = b 是一個原子命題：要麼真要麼假，沒有結構。\n\n在 Cella（cubical type theory）中，a ≡ b 是一條**路徑**：\n\n想像一條從 a 到 b 的連續變形。這條路徑由一個函數 p : I → A 描述：\n• I 是「抽象區間」，有兩個端點 0 和 1\n• p 0 = a（起點）\n• p 1 = b（終點）\n\n所以 a ≡ b 的證明就是一個函數 fun i => ...，其中：\n• 把 i 換成 0 時得到 a\n• 把 i 換成 1 時得到 b\n\n最簡單的路徑：refl : a ≡ a，定義為 fun i => a（原地不動）。\n\n為什麼這比傳統等式好？因為路徑有**結構**——不同的路徑代表不同的「等法」，路徑之間還可以有路徑（高維路徑）。",
+    "code": "-- a ≡ b 是一條路徑\n\n-- refl 是原地不動的路徑\ndef myRefl : zero ≡ zero := fun i => zero\n\n-- 這和 refl 完全一樣\ndef myRefl2 : zero ≡ zero := refl\n\n-- 計算型等式：add zero n 計算為 n\n-- 所以 fun i => succ zero 就是一條從 add zero (succ zero) 到 succ zero 的路徑\ndef computes : add zero (succ zero) ≡ succ zero := fun i => succ zero\n\n-- 歸納證明產生的路徑\n-- addZeroR k : add k zero ≡ k 是一條路徑\n-- 在 i=0 時值為 add k zero\n-- 在 i=1 時值為 k\n-- fun i => succ (addZeroR k i) 把每個時刻的值都套一層 succ\ndef pathDemo (k : Nat) : add (succ k) zero ≡ succ k :=\n  fun i => succ (addZeroR k i)\n\n-- cong 就是「對路徑的每一點套函數」\ndef congDemo (n : Nat) (m : Nat) (p : n ≡ m) : succ n ≡ succ m :=\n  fun i => succ (p i)\n",
+    "hint": "把 fun i => succ (addZeroR k i) 想成一條隨時間變化的值：在 i=0 時是 succ (add k zero)，在 i=1 時是 succ k。路徑兩端正好是我們要證的等式兩邊。",
+    "comparison": {
+      "math": "a = b 是原子命題，沒有內部結構。所有 a=a 的證明都「一樣」。",
+      "cella": "a ≡ b 是路徑空間。fun i => ... 是具體的路徑。I 是抽象區間，0 是起點，1 是終點。不同路徑 = 不同的等法（有結構）。"
+    }
+  },
+  {
+    "id": "b10",
+    "title": "Level 10：路徑有方向",
+    "concept": "sym p = fun i => p (1-i)——路徑反轉 = 對稱性",
+    "description": "等式的對稱性：如果 a = b，那麼 b = a。\n\n在路徑語言中，如果 p : a ≡ b 是一條從 a 到 b 的路徑，\n那麼 sym p : b ≡ a 是反方向走的路徑。\n\n定義非常直觀：\n  sym p = fun i => p (1 - i)\n\n• 當 i = 0 時，1 - i = 1，所以 (sym p) 0 = p 1 = b  ✓\n• 當 i = 1 時，1 - i = 0，所以 (sym p) 1 = p 0 = a  ✓\n\n路徑的方向就像一條線段的兩個走法。1 - i 是區間上的「翻轉」。\n\n更酷的是：sym (sym p) ≡ p，因為 p(1-(1-i)) = p(i)。\n在 Cella 中，這是 definitional equality——refl 就能證！",
+    "code": "-- 路徑反轉\n\n-- sym 的定義：fun i => p (1 - i)\ndef mySym {A : Type} {a : A} {b : A} (p : a ≡ b) : b ≡ a :=\n  fun i => p (1 - i)\n\n-- 雙重反轉回到原來\n-- sym (sym p) i = (sym p) (1-i) = p (1-(1-i)) = p i\ndef symSym {A : Type} {a : A} {b : A} (p : a ≡ b) : sym (sym p) ≡ p :=\n  fun j => p\n\n-- 對具體路徑使用 sym\ndef example_sym (n : Nat) : n ≡ add n zero :=\n  sym (addZeroR n)\n\n-- sym refl = refl（反轉原地不動的路徑還是原地不動）\ndef symRefl : sym (refl {Nat} {zero}) ≡ refl :=\n  fun j => fun i => zero\n",
+    "hint": "1 - i 是區間維度代數：0 變成 1，1 變成 0。所以路徑反轉就是「把區間翻過來」。sym (sym p) = p 因為 1-(1-i)=i 是代數恆等式。",
+    "comparison": {
+      "math": "對稱性：a = b → b = a。在傳統邏輯中是一條推理規則，沒有計算內容。",
+      "cella": "sym p = fun i => p (1-i)。路徑反轉有具體的計算意義：沿區間翻轉方向。1 - i 是維度代數運算。"
+    }
+  },
+  {
+    "id": "b11",
+    "title": "Level 11：函數保持路徑",
+    "concept": "cong f p = fun i => f (p i)——替換律 / 同餘性",
+    "description": "數學中的替換律（同餘性）：\n  如果 a = b，那麼 f(a) = f(b)。\n\n在路徑語言中，這就是 cong：\n  cong f p = fun i => f (p i)\n\n如果 p : a ≡ b 是一條路徑，那 cong f p 是「把 f 套在路徑的每一點上」：\n• 在 i = 0：f (p 0) = f a  ✓\n• 在 i = 1：f (p 1) = f b  ✓\n\n數學上這叫 functoriality（函子性）——f 把 A 中的路徑映射到 B 中的路徑。\n\n基本性質（都是 definitional）：\n  cong id p ≡ p                        （恆等函數不動）\n  cong (f ∘ g) p ≡ cong f (cong g p)    （組合 = 先 g 再 f）\n  cong (const c) p ≡ refl              （常函數把一切變成不動）",
+    "code": "-- 函數保持路徑 = 同餘性\n\n-- cong 的定義\ndef myCong {A : Type} {B : Type} {a : A} {b : A}\n  (f : A -> B) (p : a ≡ b) : f a ≡ f b :=\n  fun i => f (p i)\n\n-- 應用：succ 保持等式\ndef succCong (n : Nat) (m : Nat) (p : n ≡ m) : succ n ≡ succ m :=\n  fun i => succ (p i)\n\n-- 應用：add k 保持等式（固定第一個引數）\ndef addCong (k : Nat) (n : Nat) (m : Nat) (p : n ≡ m) : add k n ≡ add k m :=\n  cong (add k) p\n\n-- 組合性質：cong id p ≡ p\ndef congId {A : Type} {a : A} {b : A} (p : a ≡ b)\n  : cong (fun (x : A) => x) p ≡ p :=\n  fun i => p\n\n-- cong 的組合等於組合的 cong\ndef congComp {A : Type} {B : Type} {C : Type} {a : A} {b : A}\n  (f : B -> C) (g : A -> B) (p : a ≡ b)\n  : cong (fun (x : A) => f (g x)) p ≡ cong f (cong g p) :=\n  fun i => fun j => f (g (p j))\n",
+    "hint": "cong f p = fun i => f (p i) 非常直觀：路徑 p 在每一刻給出一個值 p(i)，cong 把每一刻的值都套上 f。這就是「函數保持等式」的計算內容。",
+    "comparison": {
+      "math": "替換律：a = b → f(a) = f(b)。或者 Leibniz 律：a = b → ∀P. P(a) → P(b)。",
+      "cella": "cong f p = fun i => f (p i)。函數在路徑的每一點上作用。這是 functoriality 的直接表達——有計算內容，不是公理。"
+    }
+  },
+  {
+    "id": "b12",
+    "title": "Level 12：歸納證明",
+    "concept": "addZeroR 的逐行解析——紙上證明 vs Cella 完全對照",
+    "description": "讓我們完整對比 ∀n∈ℕ. n+0=n 的紙上證明和 Cella 證明。\n\n紙上證明：\n  定理：∀n∈ℕ. n+0=n\n  證明：對 n 做數學歸納法。\n  基底 (n=0)：0+0=0，由加法定義直接得到。 ✓\n  歸納步 (n=k+1)：\n    歸納假設 IH：k+0=k\n    要證：(k+1)+0=k+1\n    (k+1)+0 = (k+0)+1    （加法定義）\n            = k+1          （由 IH）  ✓  □\n\nCella 證明：\n  def addZeroR (n : Nat) : add n zero ≡ n := match n with\n    | zero => refl\n    | succ k => fun i => succ (addZeroR k i)\n\n逐行對照：\n  match n with           → 對 n 做歸納\n  | zero => refl         → 基底：add zero zero 計算為 zero，refl 即得\n  | succ k =>            → 歸納步：設 n = succ k\n    addZeroR k           → 歸納假設 IH : add k zero ≡ k\n    fun i => succ (...)  → 兩邊套 succ（用路徑語言）\n\n注意：succ k 分支裡，Cella 知道 add (succ k) zero = succ (add k zero)（由 add 的定義），所以我們只需要對 add k zero ≡ k 兩邊套 succ。",
+    "code": "-- 完整的歸納證明：逐行分析\n\n-- 目標：∀n∈ℕ. add n zero ≡ n\ndef myAddZeroR (n : Nat) : add n zero ≡ n := match n with\n  -- 基底 n=0：add zero zero 計算為 zero。refl 成立。\n  | zero => refl\n  -- 歸納步 n=succ k：\n  -- 已知 (IH)：myAddZeroR k : add k zero ≡ k\n  -- 目標：add (succ k) zero ≡ succ k\n  -- add (succ k) zero = succ (add k zero)（由 add 定義）\n  -- 所以只需 succ (add k zero) ≡ succ k\n  -- = cong succ (myAddZeroR k)\n  | succ k => fun i => succ (myAddZeroR k i)\n\n-- 更多歸納證明練習\n-- ∀m,n. add m (succ n) ≡ succ (add m n)\ndef myAddSuccR (m : Nat) (n : Nat) : add m (succ n) ≡ succ (add m n) := match m with\n  | zero => refl\n  | succ k => fun i => succ (myAddSuccR k n i)\n\n-- 練習：試著寫加法交換律的基底情況\n-- 提示：需要 addZeroR\ndef addCommBase (n : Nat) : add zero n ≡ add n zero :=\n  sym (addZeroR n)\n",
+    "hint": "歸納步的關鍵是看 add 的「計算規則」：add (succ k) zero 展開為 succ (add k zero)。然後用 IH 把 add k zero 替換成 k。fun i => succ (IH i) 就是 cong succ IH。",
+    "comparison": {
+      "math": "歸納法：基底 P(0)，歸納步 P(k)→P(k+1)。歸納假設用「由 IH 知」引用。",
+      "cella": "match 的 zero 分支 = 基底，succ k 分支 = 歸納步。遞迴呼叫 = 歸納假設。fun i => succ (IH i) = cong succ IH = 「兩邊套 succ」。"
+    }
+  },
+  {
+    "id": "b13",
+    "title": "Level 13：refl 何時行何時不行",
+    "concept": "計算型等式（definitional）用 refl，命題等式（propositional）需要歸納",
+    "description": "一個重要的區分：\n\n**計算型等式（definitional equality）**：\n  兩邊展開後相同——refl 就能證明。\n  例如：add zero n ≡ n\n  因為 add 的定義 match zero with | zero => n，直接歸約為 n。\n\n**命題等式（propositional equality）**：\n  兩邊不能直接計算成相同的值——需要歸納或其他手段。\n  例如：add n zero ≡ n\n  因為 n 是變數，add n zero 無法展開（不知道 n 是 zero 還是 succ k）。\n\n為什麼 add zero n 可以 refl 但 add n zero 不行？\n\nadd 的定義是對**第一個引數** match：\n  add zero n     → n          （zero 分支直接觸發）\n  add n zero     → ???        （n 是變數，無法 match）\n\n所以 add zero n ≡ n 是 definitional（計算即得），\n而 add n zero ≡ n 需要歸納來逐個自然數驗證。\n\n口訣：能化簡的用 refl，不能化簡的用歸納。",
+    "code": "-- 計算型等式 vs 命題等式\n\n-- ✓ 計算型：add 對第一引數 match，zero 直接觸發\ndef defEq1 : add zero (succ zero) ≡ succ zero := refl\ndef defEq2 (n : Nat) : add zero n ≡ n := refl\n\n-- ✗ 命題型：add n zero 不能直接計算（n 是變數）\n-- def wrong (n : Nat) : add n zero ≡ n := refl  -- 型別錯誤！\n\n-- 需要歸納\ndef propEq (n : Nat) : add n zero ≡ n := addZeroR n\n\n-- 更多計算型等式的例子\ndef defEq3 : not true ≡ false := refl\ndef defEq4 : not (not true) ≡ true := refl\ndef defEq5 : mul zero (succ zero) ≡ zero := refl\n\n-- 命題型等式的例子（需要歸納）\n-- mul n zero ≡ zero 需要歸納，因為 mul 對第一引數 match\n-- not (not b) ≡ b 需要對 b 分情況\ndef notNot (b : Bool) : not (not b) ≡ b := match b with\n  | true => refl\n  | false => refl\n",
+    "hint": "判斷能否用 refl 的方法：看定義中 match 哪個引數。如果該引數是具體的構造子（zero, true 等），就能計算；如果是變數，就不能。",
+    "comparison": {
+      "math": "數學裡沒有明確區分——「由定義」和「由歸納」都是「顯然」。但在形式證明中這個區分至關重要。",
+      "cella": "refl 只能證明計算型等式（兩邊歸約為同一項）。命題等式需要 match + 遞迴（歸納）或其他路徑構造。add 對第一引數 match，所以 add zero n = n 是 refl，add n zero = n 需要歸納。"
+    }
+  },
+  {
+    "id": "b14",
+    "title": "Level 14：Transport",
+    "concept": "transport : (P : I → Type) → P 0 → P 1——沿型別路徑搬運值",
+    "description": "Transport 是 cubical type theory 的核心操作。\n\n數學直覺：如果你有一族型別 P 沿著區間 I 連續變化，P(0) 處的值可以「搬運」到 P(1)。\n\n  transport : (P : I -> Type) -> P 0 -> P 1\n\n用途（subst / 替換）：\n如果 p : a ≡ b 且你有 P(a) 的證明，那麼 P(b) 也成立：\n  transport (fun i => P (p i)) pa : P b\n\n這對應數學中的替換律：a = b, P(a) ⊢ P(b)。\n\n**關鍵特性**：transport 是**可計算的**。\n\n  transport (fun i => Nat) x   歸約為   x    （沿常數路徑搬運 = 不動）\n  transport (ua e) x           歸約為   fst e x （沿等價路徑搬運 = 套用等價函數）\n\n在傳統證明助理（如 Lean4）中，transport/subst 是公理化的——它保證結果存在，但不告訴你具體是什麼值。在 Cella 中，transport 真的把值算出來。",
+    "code": "-- transport 沿型別路徑搬運值\n\n-- 沿常數路徑搬運 = 不動\ndef transportId (a : Nat) : transport (fun i => Nat) a ≡ a := refl\n\n-- subst 是 transport 的常見用法：\n-- 如果 p : a ≡ b 且有 P a，那 P b\ndef mySubst {A : Type} (P : A -> Type) {a : A} {b : A}\n  (p : a ≡ b) (pa : P a) : P b :=\n  transport (fun i => P (p i)) pa\n\n-- 具體例子：如果 n ≡ m，且 n 是偶數(的某性質)，那 m 也是\n-- 用 cong 通常更直接，但 transport 更一般\n\n-- transport 的計算性：refl 就能證！\ndef transportReflNat (a : Nat) : transport (fun i => Nat) a ≡ a := refl\n\n-- 對比：cong 是 transport 的特例\n-- cong f p = fun i => f (p i)\n-- transport (fun i => f (p i) ≡ f (p i)) refl 也可以\n-- 但 cong 更直接\ndef congVsTransport (n : Nat) (m : Nat) (p : n ≡ m) : succ n ≡ succ m :=\n  cong succ p\n",
+    "hint": "transport (fun i => P (p i)) pa 的直覺：p 是一條從 a 到 b 的路徑，P(p(i)) 是一族隨 i 變化的型別，transport 把 P(a) 的值沿著這族型別搬到 P(b)。",
+    "comparison": {
+      "math": "替換律：a = b, P(a) ⊢ P(b)。在 ZFC 中這是公理或推理規則。",
+      "cella": "transport (fun i => P (p i)) pa : P b。transport 可計算——不只保證存在，還把值算出來。transport (fun i => A) x = x 是 refl。"
+    }
+  },
+  {
+    "id": "b15",
+    "title": "Level 15：等價",
+    "concept": "Equiv A B = (f : A → B) × isEquiv f——比雙射更精確的等價概念",
+    "description": "數學中的雙射（bijection）：\n  f : A → B 是雙射 ↔ f 有逆函數 g : B → A 使得 g∘f = id 且 f∘g = id。\n\n型別論中的等價（Equiv）更精確：\n  Equiv A B = (f : A -> B) × isEquiv f\n\n其中 isEquiv f 表示 f 的每個纖維（fiber）都是可縮的（contractible）：\n  isEquiv f = (b : B) -> isContr (fiber f b)\n  fiber f b = (a : A) × (f a ≡ b)\n\n為什麼不直接用雙射？因為雙射的逆函數**不唯一**（可能有多個 propositionally equal 的逆）。isEquiv 保證等價的「見證」本質上唯一——這在同倫型別論中很重要。\n\n常用等價：\n• idEquiv A : Equiv A A（恆等等價）\n• notEquiv : Equiv Bool Bool（not 是 Bool 的自等價）\n\nfst e 取出等價的正向函數。",
+    "code": "-- 等價 = (函數, 等價性證明)\n\n-- idEquiv：每個型別等價於自己\n-- idEquiv : (A : Type) -> Equiv A A\ndef natEquiv : Equiv Nat Nat := idEquiv Nat\ndef boolEquiv : Equiv Bool Bool := idEquiv Bool\n\n-- 取出正向函數\ndef applyIdEquiv (n : Nat) : Nat := fst (idEquiv Nat) n\ndef testIdEquiv : fst (idEquiv Nat) zero ≡ zero := refl\n\n-- notEquiv：not 是 Bool 上的等價\n-- not ∘ not = id，所以 not 是自逆的\ndef applyNotEquiv : Bool := fst notEquiv true\ndef testNotEquiv : fst notEquiv true ≡ false := refl\ndef testNotEquiv2 : fst notEquiv false ≡ true := refl\n\n-- 等價比雙射更精確：isEquiv 保證纖維可縮\n-- fiber f b = (a : A) × (f a ≡ b)\n-- isEquiv f = (b : B) -> isContr (fiber f b)\n\n-- not 的纖維在 true 處：{(a, p) | not a ≡ true}\n-- 唯一解：a = false, p = refl\n-- 所以 fiber not true 是可縮的 ✓\n",
+    "hint": "Equiv A B 裡的 fst 取出正向函數 f : A -> B，snd 取出 isEquiv f 的證明。idEquiv 的正向函數是恆等函數，notEquiv 的正向函數是 not。",
+    "comparison": {
+      "math": "雙射 f : A → B，存在逆 g 使 g∘f=id, f∘g=id。逆函數可能有多種選擇。",
+      "cella": "Equiv A B = (f : A -> B) × isEquiv f。isEquiv 用纖維可縮性定義，保證等價見證本質唯一。fst e 是正向函數，比雙射更「同倫正確」。"
+    }
+  },
+  {
+    "id": "b16",
+    "title": "Level 16：Univalence",
+    "concept": "ua : Equiv A B → A ≡ B——等價的型別就是相等的型別，且 transport(ua(e)) x ≡ fst e x 可計算",
+    "description": "Univalence 公理（在 cubical type theory 中是定理）：\n\n  ua : Equiv A B → A ≡ B\n\n如果 A 和 B 是等價的（有 Equiv），那麼 A 和 B 是相等的（有路徑）。\n\n在 Voevodsky 的原始 HoTT 中，ua 是公理——沒有計算內容。\n在 Lean4 中，ua 是公理，transport (ua e) x **不會歸約**。\n\n在 Cella 中（基於 CCHM cubical type theory）：\n  transport (ua e) x ≡ fst e x    是 refl！可計算！\n\n例如：\n  transport (ua notEquiv) true\n  = fst notEquiv true\n  = not true\n  = false\n\n整個歸約鏈都是自動的。這是 Cella（和 Cubical Agda）相對於 Lean4 的核心優勢。\n\n為什麼這重要？因為 transport + ua 讓你沿著「型別等價」搬運值和證明——如果不能計算，搬運後的值就是個黑盒。",
+    "code": "-- Univalence：等價 ↔ 相等\n\n-- ua 把等價轉為路徑\ndef boolPath : Bool ≡ Bool := ua notEquiv\ndef natIdPath : Nat ≡ Nat := ua (idEquiv Nat)\n\n-- 核心計算：transport (ua e) x = fst e x\n-- 在 Lean4 中這不會歸約，在 Cella 中是 refl！\ndef ua_compute_true : transport (ua notEquiv) true ≡ false := refl\ndef ua_compute_false : transport (ua notEquiv) false ≡ true := refl\n\n-- ua + idEquiv = 不動\ndef ua_id : transport (ua (idEquiv Nat)) zero ≡ zero := refl\n\n-- 往返：transport 兩次 = 套兩次函數 = id\ndef roundtrip : transport (ua notEquiv) (transport (ua notEquiv) true) ≡ true := refl\n\n-- uaBeta 定理：transport (ua e) x ≡ fst e x\n-- 在 Cella 中這是 refl（由 Glue type 的計算規則保證）\ndef myUaBeta {A : Type} {B : Type} (e : Equiv A B) (x : A)\n  : transport (ua e) x ≡ fst e x := refl\n",
+    "hint": "ua 的計算性依賴於 Glue types（CCHM cubical type theory 的核心構造）。Glue type 在 i=0 端是原型別，在 i=1 端是等價的目標型別，transport 沿著 Glue 自動套用等價函數。",
+    "comparison": {
+      "math": "在 HoTT 中，Univalence 公理說「等價的型別相等」。但作為公理，它沒有計算內容。",
+      "cella": "ua : Equiv A B → A ≡ B，且 transport (ua e) x = fst e x 可計算（refl 即證）。Lean4 的 ua 是公理（stuck），Cella 的 ua 基於 Glue types 提供完整歸約。"
+    }
+  },
+  {
+    "id": "b17",
+    "title": "Level 17：同倫層級",
+    "concept": "isContr, isProp, isSet——型別按路徑結構分層",
+    "description": "在 HoTT 中，型別按其路徑結構分為不同層級：\n\n| 層級 (n) | 名稱        | 含義                           |\n|----------|-------------|--------------------------------|\n| -2       | isContr     | 可縮：只有一個元素（up to path）|\n| -1       | isProp      | 命題：任兩元素有路徑           |\n| 0        | isSet       | 集合：任兩路徑相等             |\n| 1        | isGroupoid  | 群胚：路徑的路徑都相等         |\n\n定義（stdlib）：\n  isContr A = (center : A) × ((x : A) -> center ≡ x)\n  isProp A  = (x : A) -> (y : A) -> x ≡ y\n  isSet A   = (x y : A) -> (p q : x ≡ y) -> p ≡ q\n\n重要事實：\n• Unit 是 isContr（只有 unit 一個值）\n• Empty 是 isProp（沒有值，vacuously true）\n• Nat 是 isSet（自然數之間的等式「只有一種證法」）\n• Bool 是 isSet\n• Type **不是** isSet（因為 ua 給出 Bool ≡ Bool 的非平凡路徑）\n\n層級向上封閉：isContr → isProp → isSet → ...",
+    "code": "-- 同倫層級\n\n-- Unit 是可縮的\ndef unitContr : isContr Unit := isContrUnit\n\n-- 可縮 → 命題\ndef unitProp : isProp Unit := isContrToIsProp isContrUnit\n\n-- 命題 → 集合\ndef unitSet : isSet Unit := isPropToIsSet Unit (isContrToIsProp isContrUnit)\n\n-- Bool 的路徑分析\n-- not (not b) ≡ b 對每個 b 都是 refl（分情況）\ndef boolInvol (b : Bool) : not (not b) ≡ b := match b with\n  | true => refl\n  | false => refl\n\n-- Type 不是 isSet！\n-- 因為 Bool ≡ Bool 有至少兩條不同的路徑：\n-- (1) refl（恆等路徑）\n-- (2) ua notEquiv（not 路徑）\n-- 這兩條路徑不相等，所以路徑不唯一 → 不是 set\n\n-- isTrunc 統一所有層級\n-- isTrunc 0 A = isContr A\n-- isTrunc 1 A ≈ isProp A\n-- isTrunc 2 A ≈ isSet A\ndef truncUnit : isTrunc zero Unit := isContrUnit\n",
+    "hint": "判斷層級的直覺：如果型別的值「沒有選擇」（只有一個），是 isContr。如果等式「沒有選擇」（任兩元素相等），是 isProp。如果等式的等式「沒有選擇」，是 isSet。",
+    "comparison": {
+      "math": "在集合論中，所有等式都是命題（proof irrelevant）——不區分層級。ℕ 和 Type 都是「集合」。",
+      "cella": "isContr / isProp / isSet / isGroupoid / ... 是可證明的性質。Nat 是 isSet，但 Type 不是（ua 提供非平凡的自等價路徑）。層級向上封閉。"
+    }
+  },
+  {
+    "id": "b18",
+    "title": "Level 18：概念先於表達",
+    "concept": "{0,1} ≃ {true,false} → 它們相等（ua）。結構決定同一性。",
+    "description": "回顧我們學到的一切：\n\n1. 命題 = 型別，證明 = 值（Curry-Howard）\n2. 歸納定義 + 遞迴 = 數學結構 + 歸納法\n3. 等式是路徑，有同倫結構\n4. Transport 沿路徑搬值，且可計算\n5. ua：等價 = 相等，且可計算\n6. 型別按同倫層級分層\n\n現在把它們串起來：\n\n考慮 {0,1} 和 {true,false}。作為集合它們「顯然一樣」——有一個自然的雙射。但在傳統型別論中，Fin 2 和 Bool 是不同的型別，你需要手動寫轉換函數。\n\n在 Cella 中：\n  如果你構造了 Equiv (Fin 2) Bool，那麼 ua 給出 Fin 2 ≡ Bool。\n  transport 可以沿這條路徑自動搬運值和證明。\n\n這就是 **概念先於表達**：\n• Fin 2 和 Bool 是「有兩個元素的型別」這個**概念**的兩種**表達**\n• ua + transport 保證任何對一種表達成立的性質，自動對另一種表達成立\n• 不需要手動寫 adapter，不需要 migration\n\n**概念是等價類，程式碼是投影。**\n\n恭喜完成數學家路線！你現在知道如何把紙上的數學翻譯成 Cella——而且 Cella 能做到紙上做不到的事：可計算的 univalence。",
+    "code": "-- 概念先於表達：等價的結構就是相等的結構\n\n-- Bool ≡ Bool 的非平凡路徑（via not）\ndef boolSelfPath : Bool ≡ Bool := ua notEquiv\n\n-- 沿這條路徑 transport 就是套用 not\ndef boolTransport : transport boolSelfPath true ≡ false := refl\n\n-- 雙重搬運 = 恆等（因為 not ∘ not = id）\ndef boolRoundtrip : transport boolSelfPath (transport boolSelfPath true) ≡ true := refl\n\n-- ua + idEquiv 給出平凡路徑\ndef trivialPath : Nat ≡ Nat := ua (idEquiv Nat)\ndef trivialTransport : transport trivialPath zero ≡ zero := refl\n\n-- 綜合運用：兩次 addZeroR 串接\ndef doubleElim (m : Nat) : add (add m zero) zero ≡ m :=\n  trans (addZeroR (add m zero)) (addZeroR m)\n\n-- cong 保持等式 = 函數保持路徑 = 函子性\ndef succPreserves {n : Nat} {m : Nat} (p : n ≡ m) : succ n ≡ succ m :=\n  cong succ p\n\n-- 恭喜完成路線 B！\n-- ✓ 命題 = 型別，證明 = 項\n-- ✓ 構造邏輯：給出見證者\n-- ✓ 蘊含 = 函數，∀ = 依賴函數\n-- ✓ 歸納定義 + match = 數學歸納法\n-- ✓ 等式是路徑 (I, 0, 1, fun i => ...)\n-- ✓ transport 可計算地搬值\n-- ✓ ua：等價 = 相等，可計算\n-- ✓ 同倫層級：isContr / isProp / isSet\n-- ✓ 概念先於表達\n",
     "hint": null,
     "comparison": {
-      "title": "概念先於表達——Cella 的獨特願景",
-      "others": "Lean4/Agda/Coq: 等價的型別需要手動寫轉換函數。\n不同表達之間的 migration 是手動的。\n沒有「概念距離」的量化。",
-      "cella": "ua + transport = 等價的表達自動互轉。\n概念是型別論中的「等價類」——同一概念的不同表達，ua 讓它們成為同一個東西。",
-      "diff": "Lean4/Agda/Coq 是形式化工具。Cella 的目標是成為概念的語義層——不只形式化數學，更為概念建模。程式碼是概念的投影，概念才是本體。"
+      "math": "在數學中，同構的結構「本質上相同」——但形式上仍然不同，需要手動來回轉換。",
+      "cella": "ua 讓等價成為相等。transport 自動搬運。不需手動 adapter。概念是等價類，程式碼是投影——結構決定同一性。"
     }
   }
 ]
