@@ -256,8 +256,8 @@ function loadLevel(idx) {
       <div class="comparison-title">${level.comparison.title || '比較'}</div>
       <div class="comparison-body">
         <div class="comparison-col">
-          <div class="col-label">Lean4 / Agda / Coq</div>
-          <div class="col-content">${renderCompCol(level.comparison.others)}</div>
+          <div class="col-label">${level.comparison.math ? '數學' : 'Lean4 / Agda / Coq'}</div>
+          <div class="col-content">${renderCompCol(level.comparison.others || level.comparison.math || level.comparison.lean4 || '')}</div>
         </div>
         <div class="comparison-col">
           <div class="col-label">Cella</div>
