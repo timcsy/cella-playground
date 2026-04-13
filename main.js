@@ -99,6 +99,12 @@ function renderMarkdown(md) {
     return html;
   });
 
+  // Convert indented lines (2+ spaces) to code blocks
+  result = result.replace(/(^|\n)((?:[ ]{2,}.+\n?)+)/g, (match, pre, block) => {
+    const code = block.replace(/^[ ]{2}/gm, '').trim();
+    return pre + '<pre class="md-codeblock">' + code + '</pre>';
+  });
+
   return result
     .replace(/```([^`]*)```/gs, '<pre class="md-codeblock">$1</pre>')
     .replace(/^### (.+)$/gm, '<h4>$1</h4>')
