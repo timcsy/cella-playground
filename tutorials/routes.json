@@ -1,0 +1,23 @@
+[
+  {
+    "id": "a",
+    "name": "初心者",
+    "icon": "🌱",
+    "subtitle": "我沒學過數學",
+    "file": "route-a.json"
+  },
+  {
+    "id": "b",
+    "name": "數學人",
+    "icon": "🔬",
+    "subtitle": "我學過數學",
+    "file": "route-b.json"
+  },
+  {
+    "id": "c",
+    "name": "老手",
+    "icon": "⚡",
+    "subtitle": "我用過 Lean4/Agda/Coq",
+    "file": "route-c.json"
+  }
+]
